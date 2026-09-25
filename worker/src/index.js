@@ -52,6 +52,15 @@ async function readJson(request) {
   try { return await request.json(); } catch (e) { return null; }
 }
 
+async function requireAdmin(token, env) {
+  const username = await verifyToken(token, env.TOKEN_SECRET);
+  if (!username) return { error: json({ error: 'Token inválido.' }, 401) };
+  const user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind(username).first();
+  if (!user) return { error: json({ error: 'Usuário não encontrado.' }, 404) };
+  if (!user.is_admin) return { error: json({ error: 'Acesso restrito a administradores.' }, 403) };
+  return { user };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -79,7 +88,7 @@ export default {
       await env.DB.prepare('INSERT INTO user_progress (user_id, data) VALUES (?, ?)').bind(userId, '{}').run();
 
       const token = await signToken(username, env.TOKEN_SECRET);
-      return json({ ok: true, name, username, token });
+      return json({ ok: true, name, username, token, isAdmin: false });
     }
 
     // --- Login ---
@@ -97,7 +106,37 @@ export default {
       if (hash !== user.pass_hash) return json({ error: 'Senha incorreta.' }, 401);
 
       const token = await signToken(username, env.TOKEN_SECRET);
-      return json({ ok: true, name: user.name, username, token });
+      return json({ ok: true, name: user.name, username, token, isAdmin: !!user.is_admin });
+    }
+
+    // --- Admin: listar usuários ---
+    if (path === '/admin/users' && request.method === 'GET') {
+      const auth = await requireAdmin(url.searchParams.get('token'), env);
+      if (auth.error) return auth.error;
+
+      const { results } = await env.DB.prepare(
+        'SELECT username, name, is_admin, created_at FROM users ORDER BY created_at DESC'
+      ).all();
+      return json({ ok: true, users: results });
+    }
+
+    // --- Admin: excluir usuário ---
+    if (path === '/admin/delete-user' && request.method === 'POST') {
+      const body = await readJson(request);
+      if (!body) return json({ error: 'JSON inválido.' }, 400);
+      const auth = await requireAdmin(body.token, env);
+      if (auth.error) return auth.error;
+
+      const targetUsername = (body.username || '').trim().toLowerCase();
+      if (!targetUsername) return json({ error: 'Informe o usuário a excluir.' }, 400);
+      if (targetUsername === auth.user.username) return json({ error: 'Você não pode excluir sua própria conta de admin por aqui.' }, 400);
+
+      const target = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(targetUsername).first();
+      if (!target) return json({ error: 'Usuário não encontrado.' }, 404);
+
+      await env.DB.prepare('DELETE FROM user_progress WHERE user_id = ?').bind(target.id).run();
+      await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(target.id).run();
+      return json({ ok: true });
     }
 
     // --- Buscar progresso ---
