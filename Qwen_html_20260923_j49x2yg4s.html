@@ -183,6 +183,11 @@ body.nohead header{display:none}
 .mini{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
 .mini b{font-family:var(--mono);font-size:18px;color:var(--cyan);display:block}
 .mini span{font-size:9.5px;color:var(--mut)}
+.adminrow{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.adminrow .info{flex:1;min-width:160px}
+.adminrow .info b{display:block;font-size:13px}
+.adminrow .info span{font-size:11px;color:var(--mut)}
+.adminbadge{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--amber);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:99px;padding:2px 8px}
 .statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:6px}
 .achgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
 .ach{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;gap:9px;align-items:center;transition:.15s}
@@ -317,6 +322,7 @@ footer{position:relative;z-index:1;text-align:center;color:#3d4f6f;font-size:9px
     <div class="starchip">⭐<span id="starCt">0</span></div>
     <button class="iconbtn" id="sndBtn" title="Som">🔊</button>
     <button class="iconbtn" id="progBtn" title="Progresso">📊</button>
+    <button class="iconbtn hidden" id="adminBtn" title="Administrar usuários">👑</button>
     <button class="iconbtn" id="logoutBtn" title="Sair">🚪</button>
   </div>
 </header>
@@ -444,6 +450,14 @@ footer{position:relative;z-index:1;text-align:center;color:#3d4f6f;font-size:9px
   <div style="margin-top:20px;text-align:center"><button class="btn btn-ghost btn-sm" id="resetBtn">🗑️ Apagar progresso</button></div>
 </section>
 
+<section id="screen-admin" class="screen">
+  <button class="backlink" id="adminBack">◂ Central</button>
+  <h2 class="sect-title">👑 Administrar Usuários</h2>
+  <p class="lc-sub" style="text-align:left;margin-bottom:14px">Contas cadastradas no banco de dados.</p>
+  <div id="adminError" class="login-error"></div>
+  <div id="adminList"></div>
+</section>
+
 </main>
 <footer>BÚSSOLA NAVAL • Medicina & Marinha 🧭⚓🌊</footer>
 <div id="toasts"></div>
@@ -506,6 +520,25 @@ function apiSaveProgress(token, dataObj) {
   }).catch(function() {});
 }
 
+async function apiAdminListUsers(token) {
+  try {
+    var r = await fetch(apiUrl('/admin/users?token=' + encodeURIComponent(token)));
+    var data = await r.json();
+    return r.ok ? { ok: true, users: data.users } : { ok: false, error: data.error };
+  } catch (e) { return { ok: false, error: 'Falha de conexão com o servidor.' }; }
+}
+
+async function apiAdminDeleteUser(token, username) {
+  try {
+    var r = await fetch(apiUrl('/admin/delete-user'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, username: username })
+    });
+    var data = await r.json();
+    return r.ok ? { ok: true } : { ok: false, error: data.error };
+  } catch (e) { return { ok: false, error: 'Falha de conexão com o servidor.' }; }
+}
+
 function storageGet(key) {
   try {
     if (_useMem) return _memStore[key] || null;
@@ -540,6 +573,8 @@ function setCurrentUser(u) { storageSet('bussola_current_user', u); }
 function clearCurrentUser() { storageRemove('bussola_current_user'); }
 function getToken(u) { return storageGet('bussola_token_' + u) || ''; }
 function setToken(u, t) { storageSet('bussola_token_' + u, t); }
+function isAdminUser(u) { return storageGet('bussola_isadmin_' + u) === '1'; }
+function setIsAdmin(u, v) { storageSet('bussola_isadmin_' + u, v ? '1' : '0'); }
 
 function hideAllScreens() { var screens = document.querySelectorAll('.screen'); for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active'); }
 function showOneScreen(id) { hideAllScreens(); var el = $('screen-' + id); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', id === 'login'); window.scrollTo({ top: 0 }); }
@@ -583,6 +618,7 @@ function enterApp(userKey) {
   updateWelcome(userName);
   curLvl = getLevel(S.xp);
   updateHUD();
+  $('adminBtn').classList.toggle('hidden', !isAdminUser(userKey));
   showOneScreen('home');
   if (S.xp > 0 || S.lessonsRead.length > 0) $('btnStart').textContent = '▶ Continuar';
   playSfx('ok');
@@ -640,6 +676,7 @@ $('btnDoLogin').onclick = async function() {
     racc[u] = { name: remote.data.name, pass: p };
     saveAccounts(racc);
     setToken(u, remote.data.token);
+    setIsAdmin(u, remote.data.isAdmin);
     var remoteProgress = await apiLoadProgress(remote.data.token);
     if (remoteProgress) storageSet('bussola_data_' + u, remoteProgress);
     err.textContent = '';
@@ -678,6 +715,7 @@ $('btnDoRegister').onclick = async function() {
     racc[u] = { name: name, pass: p };
     saveAccounts(racc);
     setToken(u, remote.data.token);
+    setIsAdmin(u, remote.data.isAdmin);
     storageSet('bussola_data_' + u, JSON.stringify(DEF));
     err.textContent = '';
     setCurrentUser(u);
@@ -709,6 +747,7 @@ $('regPass').onkeydown = function(e) { if (e.key === 'Enter') $('regPass2').focu
 $('logoutBtn').onclick = function() {
   saveState(); clearCurrentUser();
   S = JSON.parse(JSON.stringify(DEF));
+  $('adminBtn').classList.add('hidden');
   showOneScreen('login');
   $('loginUser').value = ''; $('loginPass').value = '';
   $('regName').value = ''; $('regUser').value = ''; $('regPass').value = ''; $('regPass2').value = '';
@@ -959,7 +998,39 @@ function openHow() { showModal('<div class="mico">🧭</div><h2>Como Jogar</h2><
 function spawnConfetti(n) { var colors = ['#22d3ee','#2dd4a7','#fbbf24','#f472b6','#a78bfa','#ff5470','#2563eb','#38bdf8']; var container = $('confetti'); for (var i = 0; i < n; i++) { var c = document.createElement('div'); c.className = 'cf'; var sz = 4 + Math.random() * 6; c.style.width = sz + 'px'; c.style.height = (sz * 0.5) + 'px'; c.style.background = colors[i % colors.length]; c.style.left = (Math.random() * 100) + 'vw'; c.style.animationDuration = (1.8 + Math.random() * 2) + 's'; c.style.animationDelay = (Math.random() * 0.4) + 's'; container.appendChild(c); (function(el) { setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 4200); })(c); } }
 function floatXp(x, y, txt) { var el = document.createElement('div'); el.className = 'floatxp'; el.textContent = txt; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 1000); }
 
-function go(screenId) { hideAllScreens(); var el = $('screen-' + screenId); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', screenId === 'login' || screenId === 'home'); window.scrollTo({ top: 0 }); if (screenId === 'hub') renderHub(); if (screenId === 'progress') renderProgress(); playSfx('click'); }
+function go(screenId) { hideAllScreens(); var el = $('screen-' + screenId); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', screenId === 'login' || screenId === 'home'); window.scrollTo({ top: 0 }); if (screenId === 'hub') renderHub(); if (screenId === 'progress') renderProgress(); if (screenId === 'admin') renderAdmin(); playSfx('click'); }
+
+async function renderAdmin() {
+  var list = $('adminList');
+  var err = $('adminError');
+  err.textContent = '';
+  list.innerHTML = '<p style="color:var(--mut);font-size:12px">Carregando...</p>';
+  var user = getCurrentUser();
+  var token = getToken(user);
+  var res = await apiAdminListUsers(token);
+  if (!res.ok) { list.innerHTML = ''; err.textContent = res.error || 'Não foi possível carregar os usuários.'; return; }
+  list.innerHTML = '';
+  res.users.forEach(function(u) {
+    var row = document.createElement('div');
+    row.className = 'adminrow';
+    var badge = u.is_admin ? '<span class="adminbadge">ADMIN</span>' : '';
+    row.innerHTML =
+      '<div class="info"><b>' + escH(u.name) + ' ' + badge + '</b><span>@' + escH(u.username) + ' • desde ' + escH((u.created_at || '').slice(0, 10)) + '</span></div>' +
+      (u.username === user ? '' : '<button class="btn btn-ghost btn-sm" data-user="' + escH(u.username) + '">🗑️ Excluir</button>');
+    list.appendChild(row);
+  });
+  list.querySelectorAll('button[data-user]').forEach(function(btn) {
+    btn.onclick = async function() {
+      var uname = btn.getAttribute('data-user');
+      if (!confirm('Excluir a conta "' + uname + '"? Isso apaga o cadastro e o progresso dela.')) return;
+      btn.disabled = true;
+      var del = await apiAdminDeleteUser(token, uname);
+      if (!del.ok) { err.textContent = del.error || 'Não foi possível excluir.'; btn.disabled = false; return; }
+      toast('🗑️ Usuário "' + escH(uname) + '" excluído.');
+      renderAdmin();
+    };
+  });
+}
 function updateHUD() { var l = getLevel(S.xp); $('lvlNum').textContent = l; var prev = l > 1 ? nextTh(l - 1) : 0, hi = nextTh(l), range = hi - prev; var p = range > 0 ? Math.min(100, Math.max(0, ((S.xp - prev) / range) * 100)) : 0; $('xpFill').style.width = p + '%'; $('xpTxt').textContent = S.xp + 'XP'; $('starCt').textContent = totalStars(S); $('sndBtn').textContent = S.sound ? '🔊' : '🔇'; }
 
 var activeTrack = 'enf', enfCat = 'all', enfSearch = '', enfDisplay = 48, navCat = 'all', navSearch = '', navDisplay = 48;
@@ -1078,6 +1149,8 @@ $('hubBack').onclick = function() { go('home'); };
 $('modBack').onclick = function() { go('hub'); };
 $('progBtn').onclick = function() { go('progress'); };
 $('progBack').onclick = function() { go('hub'); };
+$('adminBtn').onclick = function() { go('admin'); };
+$('adminBack').onclick = function() { go('hub'); };
 $('sndBtn').onclick = function() { S.sound = !S.sound; saveState(); updateHUD(); if (S.sound) playSfx('click'); };
 $('tabEnf').onclick = function() { switchTrack('enf'); };
 $('tabNav').onclick = function() { switchTrack('nav'); };
