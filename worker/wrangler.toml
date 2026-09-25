@@ -1,0 +1,8 @@
+name = "yasmim-api"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yasmim-usuarios"
+database_id = "a9207daa-482c-42c6-8481-a72b7b3b1368"

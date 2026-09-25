@@ -454,6 +454,58 @@ footer{position:relative;z-index:1;text-align:center;color:#3d4f6f;font-size:9px
 var _memStore = {};
 var _useMem = false;
 
+/* ===== BANCO DE DADOS REMOTO (Cloudflare D1 via Worker) =====
+   Depois de publicar o Worker (veja worker/README.md), troque a linha
+   abaixo pela URL real, algo como:
+   var API_BASE = 'https://yasmim-api.SEU-SUBDOMINIO.workers.dev';
+   Enquanto API_BASE estiver vazio, ou se a API não responder, o app
+   usa o localStorage normalmente (não quebra nada). */
+var API_BASE = '';
+
+function apiUrl(path) { return API_BASE.replace(/\/$/, '') + path; }
+
+async function apiRegister(name, username, password) {
+  if (!API_BASE) return null;
+  try {
+    var r = await fetch(apiUrl('/register'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, username: username, password: password })
+    });
+    var data = await r.json();
+    return r.ok ? { ok: true, data: data } : { ok: false, error: data.error };
+  } catch (e) { return null; }
+}
+
+async function apiLogin(username, password) {
+  if (!API_BASE) return null;
+  try {
+    var r = await fetch(apiUrl('/login'), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, password: password })
+    });
+    var data = await r.json();
+    return r.ok ? { ok: true, data: data } : { ok: false, error: data.error };
+  } catch (e) { return null; }
+}
+
+async function apiLoadProgress(token) {
+  if (!API_BASE || !token) return null;
+  try {
+    var r = await fetch(apiUrl('/progress?token=' + encodeURIComponent(token)));
+    if (!r.ok) return null;
+    var data = await r.json();
+    return data.ok ? data.data : null;
+  } catch (e) { return null; }
+}
+
+function apiSaveProgress(token, dataObj) {
+  if (!API_BASE || !token) return;
+  fetch(apiUrl('/progress'), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token, data: dataObj })
+  }).catch(function() {});
+}
+
 function storageGet(key) {
   try {
     if (_useMem) return _memStore[key] || null;
@@ -486,6 +538,8 @@ function saveAccounts(acc) { storageSet('bussola_accounts', JSON.stringify(acc))
 function getCurrentUser() { return storageGet('bussola_current_user') || ''; }
 function setCurrentUser(u) { storageSet('bussola_current_user', u); }
 function clearCurrentUser() { storageRemove('bussola_current_user'); }
+function getToken(u) { return storageGet('bussola_token_' + u) || ''; }
+function setToken(u, t) { storageSet('bussola_token_' + u, t); }
 
 function hideAllScreens() { var screens = document.querySelectorAll('.screen'); for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active'); }
 function showOneScreen(id) { hideAllScreens(); var el = $('screen-' + id); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', id === 'login'); window.scrollTo({ top: 0 }); }
@@ -514,7 +568,13 @@ function loadUserData(userKey) {
   if (!S.studyDone) S.studyDone = [];
 }
 
-function saveState() { var user = getCurrentUser(); if (user) storageSet('bussola_data_' + user, JSON.stringify(S)); }
+function saveState() {
+  var user = getCurrentUser();
+  if (!user) return;
+  storageSet('bussola_data_' + user, JSON.stringify(S));
+  var token = getToken(user);
+  if (token) apiSaveProgress(token, S);
+}
 
 function enterApp(userKey) {
   loadUserData(userKey);
@@ -567,11 +627,28 @@ $('ltabRegister').onclick = function() {
 })();
 
 /* ===== ENTRAR (sem mínimo de senha) ===== */
-$('btnDoLogin').onclick = function() {
+$('btnDoLogin').onclick = async function() {
   var u = $('loginUser').value.trim().toLowerCase();
   var p = $('loginPass').value;
   var err = $('loginError');
   if (!u || !p) { err.textContent = 'Preencha usuário e senha.'; return; }
+
+  var remote = await apiLogin(u, p);
+  if (remote) {
+    if (!remote.ok) { err.textContent = remote.error || 'Não foi possível entrar.'; return; }
+    var racc = getAccounts();
+    racc[u] = { name: remote.data.name, pass: p };
+    saveAccounts(racc);
+    setToken(u, remote.data.token);
+    var remoteProgress = await apiLoadProgress(remote.data.token);
+    if (remoteProgress) storageSet('bussola_data_' + u, remoteProgress);
+    err.textContent = '';
+    setCurrentUser(u);
+    enterApp(u);
+    toast('💙 Bem-vinda de volta, <b>' + escH(remote.data.name) + '</b>!', true);
+    return;
+  }
+
   var acc = getAccounts();
   if (!acc[u]) { err.textContent = 'Usuário não encontrado. Crie uma conta primeiro.'; return; }
   if (acc[u].pass !== p) { err.textContent = 'Senha incorreta. Tente novamente.'; return; }
@@ -585,7 +662,7 @@ $('loginPass').onkeydown = function(e) { if (e.key === 'Enter') $('btnDoLogin').
 $('loginUser').onkeydown = function(e) { if (e.key === 'Enter') $('loginPass').focus(); };
 
 /* ===== CRIAR CONTA (sem mínimo de caracteres na senha) ===== */
-$('btnDoRegister').onclick = function() {
+$('btnDoRegister').onclick = async function() {
   var name = $('regName').value.trim();
   var u = $('regUser').value.trim().toLowerCase();
   var p = $('regPass').value;
@@ -593,6 +670,24 @@ $('btnDoRegister').onclick = function() {
   var err = $('regError');
   if (!name || !u || !p) { err.textContent = 'Preencha todos os campos.'; return; }
   if (p !== p2) { err.textContent = 'As senhas não coincidem.'; return; }
+
+  var remote = await apiRegister(name, u, p);
+  if (remote) {
+    if (!remote.ok) { err.textContent = remote.error || 'Não foi possível criar a conta.'; return; }
+    var racc = getAccounts();
+    racc[u] = { name: name, pass: p };
+    saveAccounts(racc);
+    setToken(u, remote.data.token);
+    storageSet('bussola_data_' + u, JSON.stringify(DEF));
+    err.textContent = '';
+    setCurrentUser(u);
+    enterApp(u);
+    spawnConfetti(60);
+    playSfx('win');
+    toast('🎉 Conta criada! Bem-vinda ao <b>BÚSSOLA NAVAL</b>, ' + escH(name) + '!', true);
+    return;
+  }
+
   var acc = getAccounts();
   if (acc[u]) { err.textContent = 'Este usuário já existe. Escolha outro.'; return; }
   acc[u] = { name: name, pass: p };
