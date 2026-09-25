@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BÚSSOLA NAVAL — Medicina & Marinha</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/sora@latest/400.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/sora@latest/700.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/400.css" rel="stylesheet">
+<style>
+:root{--bg:#050a14;--bg2:#0a1222;--panel:rgba(10,20,40,.82);--line:rgba(100,160,255,.12);--cyan:#22d3ee;--teal:#2dd4a7;--red:#ff5470;--amber:#fbbf24;--txt:#e0ecff;--mut:#7a92b8;--disp:'Sora',sans-serif;--mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--disp);color:var(--txt);background:var(--bg);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(800px 500px at 10% -5%,rgba(34,211,238,.08),transparent 60%),radial-gradient(700px 500px at 90% 100%,rgba(30,58,95,.12),transparent 60%)}
+#grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(100,160,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(100,160,255,.03) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at 50% 30%,#000 20%,transparent 70%)}
+#app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 16px}
+.screen{display:none;padding-bottom:80px}.screen.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(5,10,20,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+body.nohead header{display:none}
+.logo{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;flex-shrink:0}
+.logo .h{font-size:18px;animation:pulse 1.2s infinite}
+.logo b{font-weight:700;font-size:14px;white-space:nowrap}.logo b span{color:var(--cyan)}
+@keyframes pulse{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.08)}60%{transform:scale(1)}}
+.hud{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:nowrap}
+.lvlchip{display:flex;align-items:center;gap:5px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);border-radius:8px;padding:3px 8px;flex-shrink:0}
+.lvlchip .n{font-family:var(--mono);font-weight:700;color:var(--cyan);font-size:12px}
+.xpbar{width:80px;height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;flex-shrink:0}
+.xpbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--teal));border-radius:99px;transition:width .4s ease}
+.xptxt{font-family:var(--mono);font-size:9px;color:var(--mut);white-space:nowrap}
+.starchip{font-family:var(--mono);font-weight:700;color:var(--amber);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:3px 8px;font-size:12px;flex-shrink:0}
+.iconbtn{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt);border-radius:8px;width:32px;height:32px;font-size:14px;cursor:pointer;transition:.15s;flex-shrink:0;display:grid;place-items:center}
+.iconbtn:hover{border-color:var(--cyan)}
+.btn{font-family:var(--disp);font-weight:700;border:none;cursor:pointer;border-radius:10px;padding:11px 20px;font-size:13px;transition:.15s;display:inline-flex;align-items:center;gap:6px;justify-content:center;text-decoration:none;-webkit-appearance:none;appearance:none}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),var(--teal));color:#04121a;box-shadow:0 4px 16px rgba(34,211,238,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(34,211,238,.35)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt)}
+.btn-ghost:hover{border-color:var(--cyan)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;pointer-events:none}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:8px}
+.btn-dream{background:linear-gradient(135deg,#1e3a5f,#0ea5e9);color:#fff;box-shadow:0 4px 16px rgba(14,165,233,.3);border:1px solid rgba(14,165,233,.4)}
+.btn-dream:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(14,165,233,.4)}
+#screen-login{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+#screen-login.active{display:flex}
+.login-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:32px 24px;max-width:400px;width:100%;backdrop-filter:blur(12px)}
+.login-card .lc-icon{font-size:56px;margin-bottom:12px;animation:pulse 1.2s infinite}
+.login-card h1{font-size:26px;font-weight:700;margin-bottom:4px;background:linear-gradient(135deg,#fff 25%,var(--cyan) 55%,#60a5fa 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.login-card .lc-sub{font-size:12px;color:var(--mut);margin-bottom:20px}
+.login-field{margin-bottom:14px;text-align:left}
+.login-field label{font-size:11px;font-weight:700;color:var(--mut);display:block;margin-bottom:5px;letter-spacing:.5px}
+.login-field input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);font-family:var(--disp);font-size:13px;outline:none;transition:.15s;-webkit-appearance:none;appearance:none}
+.login-field input:focus{border-color:var(--cyan);background:rgba(34,211,238,.04)}
+.login-field input::placeholder{color:#4c5f82}
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.eye-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;opacity:.75;padding:5px;line-height:1;-webkit-appearance:none;appearance:none}
+.eye-btn:hover{opacity:1}
+.login-error{font-size:11px;color:var(--red);margin-bottom:10px;min-height:16px;text-align:left}
+.login-tabs{display:flex;gap:0;margin-bottom:18px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.login-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-weight:700;font-size:12px;background:rgba(255,255,255,.03);color:var(--mut);border:none;font-family:var(--disp);transition:.15s;-webkit-appearance:none;appearance:none}
+.login-tab.on{background:rgba(34,211,238,.12);color:var(--cyan)}
+#screen-home{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+#screen-home.active{display:flex}
+.home-badge{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--teal);border:1px solid rgba(45,212,167,.3);padding:4px 11px;border-radius:99px;background:rgba(45,212,167,.05);margin-bottom:16px}
+.home-logo{font-size:56px;animation:pulse 1.2s infinite;filter:drop-shadow(0 0 18px rgba(34,211,238,.4))}
+.home-title{font-size:clamp(30px,7vw,58px);font-weight:700;letter-spacing:2px;line-height:1.1;margin:6px 0;background:linear-gradient(135deg,#fff 25%,var(--cyan) 55%,#60a5fa 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.home-sub{color:var(--mut);font-size:clamp(12px,2vw,15px);max-width:520px;margin:6px auto 0;line-height:1.55}
+.home-sub b{color:var(--txt)}
+.home-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.home-chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.chip{font-size:10.5px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut);background:rgba(255,255,255,.02)}
+.disclaimer{margin-top:28px;font-size:10px;color:#4c5f82;max-width:440px;line-height:1.4}
+.sect-title{font-size:clamp(18px,2.8vw,24px);font-weight:700;margin:20px 0 4px}
+.backlink{background:none;border:none;color:var(--mut);font-family:var(--disp);font-size:12px;cursor:pointer;padding:12px 0 0;display:inline-flex;gap:4px}
+.backlink:hover{color:var(--cyan)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;backdrop-filter:blur(8px)}
+.hub-hero{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.hub-hero .txt h1{font-size:clamp(16px,2.5vw,22px);font-weight:700}
+.hub-hero .txt p{color:var(--mut);font-size:12px;margin-top:2px}
+.rankbadge{font-family:var(--mono);font-size:10px;color:var(--teal);border:1px solid rgba(45,212,167,.3);border-radius:99px;padding:2px 9px;display:inline-block;margin-top:4px}
+.ring{width:72px;height:72px;border-radius:50%;position:relative;display:grid;place-items:center;flex-shrink:0;background:conic-gradient(var(--teal) calc(var(--p)*1%),rgba(255,255,255,.06) 0)}
+.ring::before{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--bg2)}
+.ring span{position:relative;font-family:var(--mono);font-weight:700;font-size:12px}
+.track-tabs{display:flex;gap:0;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.track-tab{flex:1;padding:14px 10px;text-align:center;cursor:pointer;font-weight:700;font-size:13px;transition:.2s;background:rgba(255,255,255,.03);color:var(--mut);border:none;font-family:var(--disp);-webkit-appearance:none;appearance:none}
+.track-tab:first-child{border-right:1px solid var(--line)}
+.track-tab.on-enf{background:rgba(34,211,238,.12);color:var(--cyan);box-shadow:inset 0 -3px 0 var(--cyan)}
+.track-tab.on-nav{background:rgba(37,99,235,.15);color:#60a5fa;box-shadow:inset 0 -3px 0 var(--navy)}
+.track-tab.on-dream{background:rgba(14,165,233,.15);color:#38bdf8;box-shadow:inset 0 -3px 0 #0ea5e9}
+.track-tab:hover:not(.on-enf):not(.on-nav):not(.on-dream){background:rgba(255,255,255,.06)}
+.search-bar{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);font-family:var(--disp);font-size:13px;margin-bottom:14px;outline:none;transition:.15s;-webkit-appearance:none;appearance:none}
+.search-bar:focus{border-color:var(--cyan);background:rgba(34,211,238,.03)}
+.search-bar::placeholder{color:var(--mut)}
+.cat-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.cat-filters::-webkit-scrollbar{height:0}
+.cat-btn{font-family:var(--disp);font-size:11px;font-weight:700;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--mut);cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;appearance:none}
+.cat-btn.on{background:rgba(34,211,238,.1);border-color:var(--cyan);color:var(--cyan)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.mtile{position:relative;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;color:var(--txt);font-family:var(--disp);transition:.15s;overflow:hidden;-webkit-appearance:none;appearance:none}
+.mtile:hover:not(.locked){transform:translateY(-2px);border-color:var(--mc);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.mt-top{display:flex;justify-content:space-between;align-items:flex-start}
+.mt-icon{font-size:24px}
+.mt-stars{font-size:11px;color:var(--amber);letter-spacing:1px}
+.nostar{color:#2c3a55}
+.mt-name{font-weight:700;font-size:12.5px;margin:6px 0 2px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mt-cat{font-size:9px;color:var(--mut);font-family:var(--mono);text-transform:uppercase;letter-spacing:.3px}
+.mt-bar{height:3px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:8px;overflow:hidden}
+.mt-bar i{display:block;height:100%;background:var(--mc);border-radius:99px;width:0%;transition:width .3s}
+.mtile.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+.mt-lock{margin-top:6px;font-size:9px;color:var(--mut)}
+.load-more-wrap{text-align:center;margin:16px 0}
+.mod-head{display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.mod-head .ico{font-size:36px;flex-shrink:0}
+.mod-head h1{font-size:clamp(16px,2.5vw,22px);font-weight:700;line-height:1.2}
+.mod-head p{color:var(--mut);font-size:11.5px;max-width:560px;margin-top:2px}
+.tabs{display:flex;gap:7px;margin:16px 0 12px}
+.tab{font-family:var(--disp);font-weight:700;font-size:12px;padding:8px 16px;border-radius:9px;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--mut);transition:.15s;-webkit-appearance:none;appearance:none}
+.tab.on{background:rgba(34,211,238,.1);border-color:var(--cyan);color:var(--cyan)}
+.lesson-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;min-height:200px}
+.lesson-card h2{font-size:16px;margin-bottom:10px;color:#fff;line-height:1.3}
+.lesson-card h2 em{font-style:normal;font-size:10px;font-family:var(--mono);color:var(--teal);display:block;margin-bottom:4px;letter-spacing:1px}
+.lesson-body{font-size:13px;line-height:1.65;color:#c9d8f2}
+.lesson-body b{color:#fff}
+.lesson-body ul{margin:7px 0 7px 16px}
+.lesson-body li{margin-bottom:4px}
+.lesson-body li::marker{color:var(--teal)}
+.lnav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:7px;flex-wrap:wrap}
+.ldots{display:flex;gap:4px}
+.ldots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12)}
+.ldots i.on{background:var(--cyan)}
+.quiz-start{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.quiz-start .big{font-size:34px}
+.qs-stars{font-size:16px;color:var(--amber);letter-spacing:3px;margin-bottom:6px}
+.quiz-top{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.qmod{font-size:11px;color:var(--mut);font-family:var(--mono)}
+.qprog{font-family:var(--mono);font-size:11px;color:var(--cyan)}
+.qstreak{font-family:var(--mono);font-size:11px;color:var(--amber);min-width:40px;text-align:right}
+.patient{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0}
+.patient .face{font-size:24px;flex-shrink:0}
+.patient .pinfo{flex:1;min-width:0}
+.plabel{font-size:9px;color:var(--mut);font-family:var(--mono);letter-spacing:.5px;margin-bottom:4px;display:flex;justify-content:space-between}
+.pbar{height:9px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--cyan));transition:width .35s ease}
+.pbar i.low{background:linear-gradient(90deg,var(--red),#ff8fa3)}
+.hr{font-family:var(--mono);font-size:11px;color:var(--red);white-space:nowrap;flex-shrink:0}
+.hr .hh{display:inline-block;animation:pulse 1s infinite}
+.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.timer{height:4px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:10px}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--teal));border-radius:99px;transition:width .1s linear}
+.timer i.danger{background:linear-gradient(90deg,var(--red),var(--amber))}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.qtext{font-size:clamp(14px,2.2vw,17px);font-weight:700;line-height:1.4;margin-bottom:14px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px 13px;cursor:pointer;color:var(--txt);font-family:var(--disp);font-size:12.5px;transition:.12s;line-height:1.35;width:100%;-webkit-appearance:none;appearance:none}
+.opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(34,211,238,.05)}
+.opt .lt{font-family:var(--mono);font-weight:700;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.06);display:grid;place-items:center;flex-shrink:0;font-size:11px;margin-top:1px}
+.opt:disabled{cursor:default;pointer-events:none}
+.opt.correct{border-color:var(--teal);background:rgba(45,212,167,.1)}
+.opt.correct .lt{background:var(--teal);color:#04121a}
+.opt.wrong{border-color:var(--red);background:rgba(255,84,112,.08)}
+.opt.wrong .lt{background:var(--red);color:#fff}
+.explain{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.55;display:none;animation:fadeIn .25s ease}
+.explain.show{display:block}
+.explain.good{background:rgba(45,212,167,.07);border:1px solid rgba(45,212,167,.25)}
+.explain.bad{background:rgba(255,84,112,.06);border:1px solid rgba(255,84,112,.25)}
+.explain .eh{font-weight:700;margin-bottom:3px;font-size:12.5px}
+.explain.good .eh{color:var(--teal)}
+.explain.bad .eh{color:var(--red)}
+.nextwrap{text-align:center;margin-top:12px}
+.floatxp{position:fixed;z-index:200;font-family:var(--mono);font-weight:700;color:var(--teal);pointer-events:none;font-size:14px;text-shadow:0 0 8px rgba(45,212,167,.7);animation:floatUp .9s ease forwards}
+@keyframes floatUp{to{transform:translateY(-45px);opacity:0}}
+.res-wrap{max-width:480px;margin:24px auto;text-align:center}
+.res-icon{font-size:56px;animation:pulse 1.2s infinite}
+.res-stars{font-size:34px;letter-spacing:8px;margin:10px 0;color:var(--amber);min-height:42px}
+.res-stars .off{color:#2c3a55}
+.res-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.res-msg{color:var(--mut);font-size:12.5px;margin-bottom:16px;line-height:1.5}
+.res-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px}
+.res-stats .mini b{font-size:15px}
+.res-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.mini{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.mini b{font-family:var(--mono);font-size:18px;color:var(--cyan);display:block}
+.mini span{font-size:9.5px;color:var(--mut)}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:6px}
+.achgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.ach{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;gap:9px;align-items:center;transition:.15s}
+.ach.got{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.03)}
+.ach .ai{font-size:20px;filter:grayscale(1);opacity:.25;flex-shrink:0}
+.ach.got .ai{filter:none;opacity:1}
+.ach b{font-size:11px;display:block;line-height:1.2}
+.ach small{font-size:9.5px;color:var(--mut);line-height:1.3;display:block;margin-top:1px}
+.naval-banner{background:linear-gradient(135deg,rgba(30,58,95,.4),rgba(37,99,235,.15));border:1px solid rgba(37,99,235,.3);border-radius:16px;padding:24px;margin:20px 0;text-align:center;position:relative;overflow:hidden}
+.naval-banner::before{content:'⚓';position:absolute;right:-10px;bottom:-15px;font-size:120px;opacity:.06;pointer-events:none}
+.naval-banner h2{font-size:clamp(20px,3.5vw,28px);font-weight:700;color:#fff;margin-bottom:6px}
+.naval-banner p{color:#a8c4e6;font-size:13px;line-height:1.5;max-width:520px;margin:0 auto 16px}
+.naval-progress{display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.np-item{display:flex;align-items:center;gap:3px;font-size:9px;font-family:var(--mono);color:var(--mut)}
+.np-item.done{color:var(--teal)}.np-item.current{color:var(--cyan)}
+.np-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--line);background:transparent}
+.np-item.done .np-dot{background:var(--teal);border-color:var(--teal)}
+.np-item.current .np-dot{border-color:var(--cyan);box-shadow:0 0 6px rgba(34,211,238,.5)}
+.naval-phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:16px}
+.nphase{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;text-align:left;position:relative;overflow:hidden;-webkit-appearance:none;appearance:none}
+.nphase:hover:not(.locked){transform:translateY(-2px);border-color:#2563eb;box-shadow:0 6px 20px rgba(37,99,235,.2)}
+.nphase.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+.nphase.completed{border-color:rgba(45,212,167,.4)}
+.nphase.completed::after{content:'✅';position:absolute;top:10px;right:10px;font-size:16px}
+.np-icon{font-size:28px;margin-bottom:8px}
+.np-title{font-weight:700;font-size:13px;margin-bottom:3px;color:#fff}
+.np-desc{font-size:11px;color:var(--mut);line-height:1.4}
+.np-status{font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--cyan)}
+.dream-header{background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(30,58,95,.3));border:1px solid rgba(14,165,233,.3);border-radius:16px;padding:24px;margin:16px 0;text-align:center;position:relative;overflow:hidden}
+.dream-header::before{content:'🌊';position:absolute;left:-5px;bottom:-10px;font-size:100px;opacity:.06;pointer-events:none}
+.dream-header h2{font-size:clamp(22px,4vw,32px);font-weight:700;color:#38bdf8;margin-bottom:4px}
+.dream-header p{color:#a8c4e6;font-size:13px;line-height:1.5}
+.dream-quote{font-style:italic;color:#7dd3fc;font-size:12px;margin-top:8px}
+.route-container{margin:20px 0}
+.route-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:4px}
+.route-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:36px}
+.route-dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;flex-shrink:0;border:2px solid var(--line);background:var(--bg2);color:var(--mut);transition:.3s}
+.route-dot.done{background:var(--teal);border-color:var(--teal);color:#04121a}
+.route-dot.current{background:rgba(14,165,233,.2);border-color:#0ea5e9;color:#38bdf8;box-shadow:0 0 10px rgba(14,165,233,.4)}
+.route-dot.locked{opacity:.4}
+.route-connector{width:2px;flex:1;min-height:20px;background:var(--line)}
+.route-connector.done{background:var(--teal)}
+.route-content{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.route-content:hover:not(.locked){border-color:#0ea5e9;box-shadow:0 4px 16px rgba(14,165,233,.15)}
+.route-content.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+.route-content.completed{border-color:rgba(45,212,167,.3)}
+.route-content h3{font-size:14px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.route-content p{font-size:11px;color:var(--mut);line-height:1.4}
+.route-status{font-family:var(--mono);font-size:10px;margin-top:6px;display:inline-block;padding:2px 8px;border-radius:99px}
+.route-status.done{background:rgba(45,212,167,.15);color:var(--teal)}
+.route-status.current{background:rgba(14,165,233,.15);color:#38bdf8}
+.route-status.locked{background:rgba(255,255,255,.05);color:var(--mut)}
+.dream-progress{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}
+.dream-progress h3{font-size:13px;font-weight:700;margin-bottom:8px}
+.progress-bar-outer{height:14px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,#0ea5e9,var(--teal));border-radius:99px;transition:width .5s ease}
+.progress-text{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:6px;text-align:right}
+.mission-card{background:linear-gradient(135deg,rgba(14,165,233,.08),rgba(30,58,95,.15));border:1px solid rgba(14,165,233,.25);border-radius:14px;padding:18px;margin:12px 0}
+.mission-card h3{font-size:15px;font-weight:700;color:#38bdf8;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.mission-card p{font-size:12px;color:#a8c4e6;line-height:1.5;margin-bottom:12px}
+.mission-q{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px}
+.mission-q .q-text{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:flex-start;gap:6px}
+.mission-q .q-text span{font-size:16px;flex-shrink:0}
+.mission-opts{display:grid;gap:6px}
+.mission-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.02);cursor:pointer;font-size:12px;color:var(--txt);transition:.12s;font-family:var(--disp);text-align:left;width:100%;-webkit-appearance:none;appearance:none}
+.mission-opt:hover:not(:disabled){border-color:#0ea5e9;background:rgba(14,165,233,.08)}
+.mission-opt:disabled{cursor:default;pointer-events:none}
+.mission-opt.correct{border-color:var(--teal);background:rgba(45,212,167,.1)}
+.mission-opt.wrong{border-color:var(--red);background:rgba(255,84,112,.08)}
+.mission-explain{font-size:11px;color:#a8c4e6;margin-top:6px;padding:8px;background:rgba(14,165,233,.06);border-radius:8px;display:none;line-height:1.4}
+.mission-explain.show{display:block}
+.mission-result{text-align:center;padding:20px;background:linear-gradient(135deg,rgba(45,212,167,.1),rgba(14,165,233,.1));border:1px solid rgba(45,212,167,.3);border-radius:14px;margin-top:16px;display:none}
+.mission-result.show{display:block}
+.mission-result h3{font-size:18px;color:var(--teal);margin-bottom:6px}
+.mission-result p{font-size:12px;color:#a8c4e6;line-height:1.6}
+.diario-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:12px}
+.diario-card h3{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.carta-area{width:100%;min-height:120px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--txt);font-family:var(--disp);font-size:13px;line-height:1.6;resize:vertical;outline:none;transition:.15s;-webkit-appearance:none;appearance:none}
+.carta-area:focus{border-color:#0ea5e9}
+.carta-area::placeholder{color:var(--mut)}
+.diario-entries{margin-top:12px}
+.diario-entry{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px}
+.diario-entry .date{font-family:var(--mono);font-size:10px;color:var(--mut);margin-bottom:4px}
+.diario-entry .text{font-size:12px;color:#c9d8f2;line-height:1.5}
+.diario-entry .del-btn{font-size:10px;color:var(--red);cursor:pointer;background:none;border:none;font-family:var(--disp);margin-top:4px}
+.study-stage{margin-bottom:16px}
+.study-stage-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;padding:8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line);transition:.15s}
+.study-stage-header:hover{border-color:#0ea5e9}
+.study-stage-header .ss-icon{font-size:20px}
+.study-stage-header .ss-name{font-size:13px;font-weight:700;flex:1}
+.study-stage-header .ss-pct{font-family:var(--mono);font-size:10px;color:var(--teal)}
+.study-stage-header .ss-arrow{font-size:12px;color:var(--mut);transition:.2s}
+.study-stage-header.open .ss-arrow{transform:rotate(90deg)}
+.study-grid{display:none;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px;padding:0 4px}
+.study-grid.open{display:grid}
+.study-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;transition:.15s;text-align:left}
+.study-card:hover{border-color:#0ea5e9;transform:translateY(-1px)}
+.study-card .sc-title{font-size:12px;font-weight:700;margin-bottom:4px}
+.study-card .sc-status{font-family:var(--mono);font-size:9px;color:var(--mut)}
+.study-card.done{border-color:rgba(45,212,167,.3);background:rgba(45,212,167,.04)}
+.study-card.done .sc-status{color:var(--teal)}
+#toasts{position:fixed;bottom:14px;right:14px;z-index:300;display:flex;flex-direction:column;gap:7px;align-items:flex-end;pointer-events:none}
+.toast{background:#0d1830;border:1px solid rgba(34,211,238,.35);border-radius:10px;padding:9px 14px;font-size:11.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);animation:toastIn .25s ease;display:flex;gap:6px;align-items:center;max-width:280px;pointer-events:auto}
+.toast.gold{border-color:rgba(251,191,36,.45);background:#1a1608}
+@keyframes toastIn{from{transform:translateX(25px);opacity:0}}
+.toast.out{transition:.35s;opacity:0;transform:translateX(25px)}
+#modal-wrap{position:fixed;inset:0;z-index:400;background:rgba(3,6,14,.8);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px}
+#modal-wrap.show{display:flex}
+.modal{background:var(--bg2);border:1px solid rgba(34,211,238,.25);border-radius:16px;padding:24px;max-width:440px;width:100%;animation:popIn .25s cubic-bezier(.2,1.3,.4,1);text-align:center;max-height:85vh;overflow-y:auto}
+@keyframes popIn{from{transform:scale(.9);opacity:0}}
+.modal .mico{font-size:42px}
+.modal h2{font-size:18px;font-weight:700;margin:7px 0 5px}
+.modal p{color:#c9d8f2;font-size:12.5px;line-height:1.55;text-align:left}
+.modal .mrow{text-align:left;display:flex;gap:8px;margin-bottom:8px;font-size:12px;line-height:1.45}
+.modal .mrow .mi{font-size:16px;flex-shrink:0;margin-top:1px}
+.lvl-big{font-size:40px;font-weight:700;color:var(--cyan);font-family:var(--mono);text-shadow:0 0 20px rgba(34,211,238,.5)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:350;overflow:hidden}
+.cf{position:absolute;top:-15px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.4}}
+footer{position:relative;z-index:1;text-align:center;color:#3d4f6f;font-size:9px;padding:14px;border-top:1px solid var(--line)}
+@media(max-width:480px){.hud{gap:5px}.xpbar{width:50px}.xptxt{display:none}.res-stats{grid-template-columns:repeat(2,1fr)}.qcard,.lesson-card{padding:14px}.mgrid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.home-title{font-size:clamp(28px,8vw,46px)}.naval-phases{grid-template-columns:1fr}.track-tab{font-size:10px;padding:12px 4px}.study-grid{grid-template-columns:1fr 1fr}.login-card{padding:24px 16px}}
+</style>
+</head>
+<body class="nohead">
+<div id="grid-bg"></div>
+<header id="topbar">
+  <div class="logo" id="logoBtn"><span class="h">🧭</span><b>BÚSSOLA<span> NAVAL</span></b></div>
+  <div class="hud">
+    <div class="lvlchip">⚕<span class="n" id="lvlNum">1</span></div>
+    <div class="xpbar"><i id="xpFill"></i></div>
+    <span class="xptxt" id="xpTxt">0XP</span>
+    <div class="starchip">⭐<span id="starCt">0</span></div>
+    <button class="iconbtn" id="sndBtn" title="Som">🔊</button>
+    <button class="iconbtn" id="progBtn" title="Progresso">📊</button>
+    <button class="iconbtn" id="logoutBtn" title="Sair">🚪</button>
+  </div>
+</header>
+<main id="app">
+
+<section id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="lc-icon">🧭</div>
+    <h1>BÚSSOLA NAVAL</h1>
+    <div class="lc-sub">Medicina & Marinha — Entre para continuar sua jornada</div>
+    <div class="login-tabs">
+      <button class="login-tab on" id="ltabLogin">Entrar</button>
+      <button class="login-tab" id="ltabRegister">Criar Conta</button>
+    </div>
+    <div id="loginForm">
+      <div class="login-field"><label>NOME DE USUÁRIO</label><input type="text" id="loginUser" placeholder="Seu nome de usuário" autocomplete="off"></div>
+      <div class="login-field"><label>SENHA</label>
+        <div class="pass-wrap">
+          <input type="password" id="loginPass" placeholder="Sua senha">
+          <button class="eye-btn" data-target="loginPass" type="button" title="Mostrar senha">👁️</button>
+        </div>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="btnDoLogin">▶ Entrar</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="login-field"><label>SEU NOME</label><input type="text" id="regName" placeholder="Como quer ser chamada?" autocomplete="off"></div>
+      <div class="login-field"><label>NOME DE USUÁRIO</label><input type="text" id="regUser" placeholder="Ex: yasmin_med" autocomplete="off"></div>
+      <div class="login-field"><label>CRIE UMA SENHA</label>
+        <div class="pass-wrap">
+          <input type="password" id="regPass" placeholder="Sua senha">
+          <button class="eye-btn" data-target="regPass" type="button" title="Mostrar senha">👁️</button>
+        </div>
+      </div>
+      <div class="login-field"><label>CONFIRME A SENHA</label>
+        <div class="pass-wrap">
+          <input type="password" id="regPass2" placeholder="Repita a senha">
+          <button class="eye-btn" data-target="regPass2" type="button" title="Mostrar senha">👁️</button>
+        </div>
+      </div>
+      <div class="login-error" id="regError"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="btnDoRegister">💙 Criar Minha Conta</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-home" class="screen">
+  <div class="home-badge">✚ MEDICINA & MARINHA ⚓</div>
+  <div class="home-logo">🧭</div>
+  <h1 class="home-title">BÚSSOLA NAVAL</h1>
+  <p class="home-sub" id="homeWelcome">Duas trilhas separadas:<br><b>🩺 Medicina</b> (500 módulos) • <b>⚓ Marinha</b> (500 módulos)<br><b>🌊 Rota para o Sonho</b> — sua jornada pessoal</p>
+  <div class="home-actions">
+    <button class="btn btn-primary" id="btnStart">▶ Começar</button>
+    <button class="btn btn-ghost" id="btnHow">❓ Como Jogar</button>
+  </div>
+  <div class="home-chips"><span class="chip">🩺 500 Medicina</span><span class="chip">⚓ 500 Marinha</span><span class="chip">🌊 Rota do Sonho</span><span class="chip">🏆 20 conquistas</span></div>
+  <p class="disclaimer">⚠️ Conteúdo educativo simplificado. Não substitui material acadêmico oficial.</p>
+</section>
+
+<section id="screen-hub" class="screen">
+  <button class="backlink" id="hubBack">◂ Início</button>
+  <div class="hub-hero">
+    <div class="ring" id="hubRing" style="--p:0"><span id="hubRingTxt">0%</span></div>
+    <div class="txt"><h1 id="hubWelcome">Central do Estudante</h1><p>Escolha sua trilha.</p><span class="rankbadge" id="hubRank">Calouro(a)</span></div>
+  </div>
+  <div class="track-tabs">
+    <button class="track-tab on-enf" id="tabEnf">🩺 Medicina (500)</button>
+    <button class="track-tab" id="tabNav">⚓ Marinha (500)</button>
+    <button class="track-tab" id="tabDream">🌊 Rota do Sonho</button>
+  </div>
+  <div id="enfSection">
+    <input class="search-bar" id="searchBarEnf" placeholder="🔍 Buscar módulo..." autocomplete="off">
+    <div class="cat-filters" id="catFiltersEnf"></div>
+    <h2 class="sect-title">🩺 Módulos de Medicina <span id="modCountEnf" style="font-size:12px;color:var(--mut);font-weight:400"></span></h2>
+    <div class="mgrid" id="modGridEnf"></div>
+    <div class="load-more-wrap" id="loadMoreWrapEnf" style="display:none"><button class="btn btn-ghost btn-sm" id="loadMoreBtnEnf">Carregar mais ▾</button></div>
+  </div>
+  <div id="navSection" style="display:none">
+    <div class="naval-banner"><h2>⚓ Trilha Medicina Naval</h2><p>500 módulos exclusivos da Marinha do Brasil em 20 fases.</p><div class="naval-progress" id="navalProgress"></div></div>
+    <div class="naval-phases" id="navalPhases"></div>
+    <input class="search-bar" id="searchBarNav" placeholder="🔍 Buscar módulo naval..." autocomplete="off" style="margin-top:16px">
+    <div class="cat-filters" id="catFiltersNav"></div>
+    <h2 class="sect-title">⚓ Módulos Navais <span id="modCountNav" style="font-size:12px;color:var(--mut);font-weight:400"></span></h2>
+    <div class="mgrid" id="modGridNav"></div>
+    <div class="load-more-wrap" id="loadMoreWrapNav" style="display:none"><button class="btn btn-ghost btn-sm" id="loadMoreBtnNav">Carregar mais ▾</button></div>
+  </div>
+  <div id="dreamSection" style="display:none">
+    <div class="dream-header"><h2>🌊 ROTA PARA O SONHO</h2><p>Sua jornada rumo à Medicina e à Marinha.</p><div class="dream-quote">"Cada conhecimento é um passo em direção ao seu futuro."</div></div>
+    <div class="dream-progress"><h3>📍 Seu progresso na Rota</h3><div class="progress-bar-outer"><div class="progress-bar-inner" id="dreamProgressBar" style="width:0%"></div></div><div class="progress-text" id="dreamProgressText">0%</div></div>
+    <div class="route-container" id="routeContainer"></div>
+    <div class="mission-card"><h3>⚓ Missão do Dia</h3><p id="missionDesc">Responda as perguntas para avançar!</p><div id="missionQuestions"></div><div class="mission-result" id="missionResult"><h3>🌊 Missão concluída!</h3><p id="missionResultText"></p><button class="btn btn-dream btn-sm" style="margin-top:10px" id="missionNextBtn">Avançar na Rota ▸</button></div></div>
+    <div class="diario-card"><h3>💙 Carta para o meu futuro</h3><p style="font-size:11px;color:var(--mut);margin-bottom:10px">Escreva seu sonho. Quando estiver desanimada, volte aqui.</p><textarea class="carta-area" id="cartaInput" placeholder="Eu quero ser médica da Marinha porque..."></textarea><button class="btn btn-dream btn-sm" style="margin-top:10px" id="salvarCartaBtn">💌 Guardar no Diário de Bordo</button></div>
+    <div class="diario-card"><h3>🩺 Diário de Bordo</h3><div class="diario-entries" id="diarioEntries"></div></div>
+    <div class="diario-card"><h3>🧭 Navegação Médica — Do 9º ano até a Faculdade</h3><p style="font-size:11px;color:var(--mut);margin-bottom:10px">Clique na etapa para abrir, clique no tema para marcar como estudado.</p><div id="studyStages"></div></div>
+  </div>
+  <h2 class="sect-title">📈 Desempenho Geral</h2>
+  <div class="statrow" id="statRow"></div>
+</section>
+
+<section id="screen-module" class="screen">
+  <button class="backlink" id="modBack">◂ Central</button>
+  <div class="mod-head" id="modHead"></div>
+  <div class="tabs"><button class="tab on" id="tabLearn">📖 Aula</button><button class="tab" id="tabQuiz">🎯 Desafio</button></div>
+  <div id="panelLearn"><div class="lesson-card"><h2><em id="lIdx"></em><span id="lTitle"></span></h2><div class="lesson-body" id="lBody"></div><div class="lnav"><button class="btn btn-ghost btn-sm" id="lPrev">◂ Anterior</button><div class="ldots" id="lDots"></div><button class="btn btn-primary btn-sm" id="lNext">Próxima ▸</button></div></div></div>
+  <div id="panelQuiz" style="display:none"><div class="quiz-start"><div class="big">🎯</div><div class="qs-stars" id="qsStars"></div><p style="color:var(--mut);font-size:12px;line-height:1.5;max-width:400px;margin:0 auto 5px" id="qsInfo"></p><p style="color:#c9d8f2;font-size:11px;margin-bottom:14px">💡 Acertos curam o paciente. Erros custam estabilidade!</p><button class="btn btn-primary" id="startQuizBtn">▶ Iniciar</button></div></div>
+</section>
+
+<section id="screen-quiz" class="screen">
+  <div class="quiz-top"><span class="qmod" id="qMod"></span><span class="qprog" id="qProg"></span><span class="qstreak" id="qStreak"></span></div>
+  <div class="patient" id="patientBox"><div class="face">🧑‍🦲</div><div class="pinfo"><div class="plabel"><span>ESTABILIDADE</span><span id="hpTxt">100%</span></div><div class="pbar"><i id="hpFill" style="width:100%"></i></div></div><div class="hr"><span class="hh">♥</span><span id="hrTxt">72</span>bpm</div></div>
+  <div class="timer"><i id="tFill"></i></div>
+  <div class="qcard"><div class="qtext" id="qText"></div><div class="opts" id="qOpts"></div><div class="explain" id="qExp"></div><div class="nextwrap"><button class="btn btn-primary" id="qNext" style="display:none">Próxima ▸</button></div></div>
+</section>
+
+<section id="screen-result" class="screen">
+  <div class="res-wrap card"><div class="res-icon" id="resIcon">🎉</div><div class="res-stars" id="resStars"></div><h1 class="res-title" id="resTitle"></h1><p class="res-msg" id="resMsg"></p><div class="res-stats" id="resStats"></div><div class="res-actions" id="resActions"></div></div>
+</section>
+
+<section id="screen-progress" class="screen">
+  <button class="backlink" id="progBack">◂ Central</button>
+  <h2 class="sect-title">📊 Progresso & Conquistas</h2>
+  <div class="statrow" id="pStats"></div>
+  <h3 style="margin:20px 0 8px;font-size:14px">🏆 Conquistas <span style="color:var(--mut);font-weight:400;font-size:11px" id="achCt"></span></h3>
+  <div class="achgrid" id="achGrid"></div>
+  <div style="margin-top:20px;text-align:center"><button class="btn btn-ghost btn-sm" id="resetBtn">🗑️ Apagar progresso</button></div>
+</section>
+
+</main>
+<footer>BÚSSOLA NAVAL • Medicina & Marinha 🧭⚓🌊</footer>
+<div id="toasts"></div>
+<div id="modal-wrap"><div class="modal" id="modalBox"></div></div>
+<div id="confetti"></div>
+
+<script>
+var _memStore = {};
+var _useMem = false;
+
+function storageGet(key) {
+  try {
+    if (_useMem) return _memStore[key] || null;
+    return localStorage.getItem(key);
+  } catch(e) { _useMem = true; return _memStore[key] || null; }
+}
+function storageSet(key, val) {
+  try {
+    if (_useMem) { _memStore[key] = val; return; }
+    localStorage.setItem(key, val);
+  } catch(e) { _useMem = true; _memStore[key] = val; }
+}
+function storageRemove(key) {
+  try {
+    if (_useMem) { delete _memStore[key]; return; }
+    localStorage.removeItem(key);
+  } catch(e) { _useMem = true; delete _memStore[key]; }
+}
+
+(function testStorage() {
+  try { localStorage.setItem('__test__', '1'); localStorage.removeItem('__test__'); }
+  catch(e) { _useMem = true; }
+})();
+
+function $(id) { return document.getElementById(id); }
+function escH(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function getAccounts() { try { return JSON.parse(storageGet('bussola_accounts') || '{}'); } catch(e) { return {}; } }
+function saveAccounts(acc) { storageSet('bussola_accounts', JSON.stringify(acc)); }
+function getCurrentUser() { return storageGet('bussola_current_user') || ''; }
+function setCurrentUser(u) { storageSet('bussola_current_user', u); }
+function clearCurrentUser() { storageRemove('bussola_current_user'); }
+
+function hideAllScreens() { var screens = document.querySelectorAll('.screen'); for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active'); }
+function showOneScreen(id) { hideAllScreens(); var el = $('screen-' + id); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', id === 'login'); window.scrollTo({ top: 0 }); }
+
+var DEF = { xp:0, modules:{}, ach:[], lessonsRead:[], correct:0, answered:0, bestStreak:0, quizDone:0, perfect:0, sound:true, dreamRoute:0, dreamMissions:{}, diario:[], studyDone:[] };
+var S = JSON.parse(JSON.stringify(DEF));
+
+function loadUserData(userKey) {
+  try {
+    var d = JSON.parse(storageGet('bussola_data_' + userKey) || 'null');
+    if (d && typeof d.xp === 'number') S = d;
+    else S = JSON.parse(JSON.stringify(DEF));
+  } catch(e) { S = JSON.parse(JSON.stringify(DEF)); }
+  if (!S.modules) S.modules = {};
+  if (!S.ach) S.ach = [];
+  if (!S.lessonsRead) S.lessonsRead = [];
+  if (typeof S.correct !== 'number') S.correct = 0;
+  if (typeof S.answered !== 'number') S.answered = 0;
+  if (typeof S.bestStreak !== 'number') S.bestStreak = 0;
+  if (typeof S.quizDone !== 'number') S.quizDone = 0;
+  if (typeof S.perfect !== 'number') S.perfect = 0;
+  if (typeof S.sound !== 'boolean') S.sound = true;
+  if (typeof S.dreamRoute !== 'number') S.dreamRoute = 0;
+  if (!S.dreamMissions) S.dreamMissions = {};
+  if (!S.diario) S.diario = [];
+  if (!S.studyDone) S.studyDone = [];
+}
+
+function saveState() { var user = getCurrentUser(); if (user) storageSet('bussola_data_' + user, JSON.stringify(S)); }
+
+function enterApp(userKey) {
+  loadUserData(userKey);
+  var acc = getAccounts();
+  var userName = acc[userKey] ? acc[userKey].name : 'Estudante';
+  updateWelcome(userName);
+  curLvl = getLevel(S.xp);
+  updateHUD();
+  showOneScreen('home');
+  if (S.xp > 0 || S.lessonsRead.length > 0) $('btnStart').textContent = '▶ Continuar';
+  playSfx('ok');
+}
+
+function updateWelcome(name) {
+  var w = $('homeWelcome');
+  if (w) w.innerHTML = 'Olá, <b>' + escH(name) + '</b>! 💙<br>Duas trilhas separadas:<br><b>🩺 Medicina</b> (500 módulos) • <b>⚓ Marinha</b> (500 módulos)<br><b>🌊 Rota para o Sonho</b> — sua jornada pessoal';
+  var hw = $('hubWelcome');
+  if (hw) hw.textContent = 'Olá, ' + name + '! 💙';
+}
+
+$('ltabLogin').onclick = function() {
+  this.classList.add('on'); $('ltabRegister').classList.remove('on');
+  $('loginForm').style.display = 'block'; $('registerForm').style.display = 'none';
+  $('loginError').textContent = '';
+};
+$('ltabRegister').onclick = function() {
+  this.classList.add('on'); $('ltabLogin').classList.remove('on');
+  $('registerForm').style.display = 'block'; $('loginForm').style.display = 'none';
+  $('regError').textContent = '';
+};
+
+/* ===== OLHINHO DE VER SENHA ===== */
+(function() {
+  var eyeBtns = document.querySelectorAll('.eye-btn');
+  for (var i = 0; i < eyeBtns.length; i++) {
+    eyeBtns[i].onclick = function() {
+      var target = $(this.getAttribute('data-target'));
+      if (!target) return;
+      if (target.type === 'password') {
+        target.type = 'text';
+        this.textContent = '🙈';
+        this.title = 'Ocultar senha';
+      } else {
+        target.type = 'password';
+        this.textContent = '👁️';
+        this.title = 'Mostrar senha';
+      }
+    };
+  }
+})();
+
+/* ===== ENTRAR (sem mínimo de senha) ===== */
+$('btnDoLogin').onclick = function() {
+  var u = $('loginUser').value.trim().toLowerCase();
+  var p = $('loginPass').value;
+  var err = $('loginError');
+  if (!u || !p) { err.textContent = 'Preencha usuário e senha.'; return; }
+  var acc = getAccounts();
+  if (!acc[u]) { err.textContent = 'Usuário não encontrado. Crie uma conta primeiro.'; return; }
+  if (acc[u].pass !== p) { err.textContent = 'Senha incorreta. Tente novamente.'; return; }
+  err.textContent = '';
+  setCurrentUser(u);
+  enterApp(u);
+  toast('💙 Bem-vinda de volta, <b>' + escH(acc[u].name) + '</b>!', true);
+};
+
+$('loginPass').onkeydown = function(e) { if (e.key === 'Enter') $('btnDoLogin').click(); };
+$('loginUser').onkeydown = function(e) { if (e.key === 'Enter') $('loginPass').focus(); };
+
+/* ===== CRIAR CONTA (sem mínimo de caracteres na senha) ===== */
+$('btnDoRegister').onclick = function() {
+  var name = $('regName').value.trim();
+  var u = $('regUser').value.trim().toLowerCase();
+  var p = $('regPass').value;
+  var p2 = $('regPass2').value;
+  var err = $('regError');
+  if (!name || !u || !p) { err.textContent = 'Preencha todos os campos.'; return; }
+  if (p !== p2) { err.textContent = 'As senhas não coincidem.'; return; }
+  var acc = getAccounts();
+  if (acc[u]) { err.textContent = 'Este usuário já existe. Escolha outro.'; return; }
+  acc[u] = { name: name, pass: p };
+  saveAccounts(acc);
+  setCurrentUser(u);
+  storageSet('bussola_data_' + u, JSON.stringify(DEF));
+  err.textContent = '';
+  enterApp(u);
+  spawnConfetti(60);
+  playSfx('win');
+  toast('🎉 Conta criada! Bem-vinda ao <b>BÚSSOLA NAVAL</b>, ' + escH(name) + '!', true);
+};
+
+$('regPass2').onkeydown = function(e) { if (e.key === 'Enter') $('btnDoRegister').click(); };
+$('regName').onkeydown = function(e) { if (e.key === 'Enter') $('regUser').focus(); };
+$('regUser').onkeydown = function(e) { if (e.key === 'Enter') $('regPass').focus(); };
+$('regPass').onkeydown = function(e) { if (e.key === 'Enter') $('regPass2').focus(); };
+
+$('logoutBtn').onclick = function() {
+  saveState(); clearCurrentUser();
+  S = JSON.parse(JSON.stringify(DEF));
+  showOneScreen('login');
+  $('loginUser').value = ''; $('loginPass').value = '';
+  $('regName').value = ''; $('regUser').value = ''; $('regPass').value = ''; $('regPass2').value = '';
+  $('loginError').textContent = ''; $('regError').textContent = '';
+  toast('🚪 Você saiu da conta.');
+};
+
+/* ===== DADOS ===== */
+function expandTopics(base, n) {
+  var out = [], i;
+  for (i = 0; i < base.length && out.length < n; i++) out.push(base[i]);
+  var suf = [' II',' III',' — Prática Clínica',' — Casos Clínicos',' — Nível Avançado',' — Protocolos',' — Atualizações',' — Gestão e Qualidade',' — Avaliação Clínica',' — Aplicação Prática',' — Situações Especiais',' — Urgências',' — Evidências Científicas',' — Abordagem Integral'];
+  var si = 0;
+  while (out.length < n && si < suf.length) { for (i = 0; i < base.length && out.length < n; i++) out.push(base[i] + suf[si]); si++; }
+  return out.slice(0, n);
+}
+
+var MED_CATS = [
+{id:'fund',name:'Fundamentos',icon:'🩺',color:'#22d3ee'},{id:'anato',name:'Anatomia',icon:'🫀',color:'#f472b6'},{id:'fisio',name:'Fisiologia',icon:'⚙️',color:'#f0abfc'},{id:'farma',name:'Farmacologia',icon:'💊',color:'#a78bfa'},{id:'semi',name:'Semiologia',icon:'🌡️',color:'#fbbf24'},{id:'clin',name:'Clínica Médica',icon:'🏥',color:'#34d399'},{id:'infec',name:'Infectologia',icon:'🦠',color:'#a3e635'},{id:'diag',name:'Diagnóstico',icon:'🔬',color:'#818cf8'},{id:'urg',name:'Urgência',icon:'🚨',color:'#fb7185'},{id:'cirur',name:'Cirurgia',icon:'🔪',color:'#64748b'},{id:'saude',name:'Saúde Coletiva',icon:'🌎',color:'#2dd4a7'},{id:'mulher',name:'Saúde Mulher',icon:'🤰',color:'#ec4899'},{id:'crianca',name:'Pediatria',icon:'👶',color:'#06b6d4'},{id:'idoso',name:'Geriatria',icon:'👴',color:'#f97316'},{id:'mental',name:'Psiquiatria',icon:'🧠',color:'#c084fc'},{id:'etica',name:'Ética Médica',icon:'⚖️',color:'#94a3b8'},{id:'nutri',name:'Nutrição Clínica',icon:'🥗',color:'#4ade80'},{id:'admin',name:'Gestão em Saúde',icon:'📋',color:'#facc15'},{id:'pesquisa',name:'Pesquisa Médica',icon:'📊',color:'#818cf8'},{id:'tecnol',name:'Tecnologia',icon:'💻',color:'#22d3ee'}
+];
+
+var MED_TOPICS = {
+fund:['História da Medicina','Processo Diagnóstico','Raciocínio Clínico','Medicina Baseada em Evidências','Anamnese','Exame Físico','Relação Médico-Paciente','Lei do Ato Médico','CFM e CRM','Equipe Médica','Níveis de Atenção','Humanização','Comunicação Terapêutica','Registro em Prontuário','Evolução Médica','Consulta Médica','Prescrição Médica','Protocolos Clínicos','Segurança do Paciente','Metas Internacionais','Identificação do Paciente','Cirurgia Segura','Notificação de Eventos Adversos','Gestão de Riscos','Saúde Baseada em Valor'],
+anato:['Sistema Cardiovascular','Sistema Respiratório','Sistema Digestório','Sistema Urinário','Sistema Nervoso Central','Sistema Nervoso Periférico','Sistema Endócrino','Sist. Reprodutor Feminino','Sist. Reprodutor Masculino','Sist. Musculoesquelético','Sistema Tegumentar','Sistema Linfático','Sistema Imunológico','Hematologia Básica','Anatomia do Coração','Vasos Sanguíneos','Nervos Cranianos','Ossos e Articulações','Músculos Principais','Embriologia Básica','Anatomia Abdominal','Anatomia Torácica','Neuroanatomia','Anatomia do Pelve','Anatomia de Cabeça e Pescoço'],
+fisio:['Fisiologia Celular','Potencial de Membrana','Fisiologia Nervosa','Fisiologia Muscular','Fisiologia Cardíaca','Ciclo Cardíaco','Fisiologia Vascular','Regulação da Pressão Arterial','Fisiologia Respiratória','Trocas Gasosas','Fisiologia Renal','Filtração Glomerular','Equilíbrio Ácido-Base','Equilíbrio Hidroeletrolítico','Fisiologia Digestória','Fisiologia Hepática','Fisiologia Endócrina','Eixo Hipotálamo-Hipófise','Fisiologia Reprodutiva','Fisiologia do Exercício','Termorregulação','Fisiologia Sensorial','Dor e Nocicepção','Sono e Ritmo Circadiano','Fisiologia do Envelhecimento'],
+farma:['Administração de Medicamentos','Vias de Administração','Cálculo de Dosagem','Diluição','Antibióticos','Analgésicos','Anti-hipertensivos','Hipoglicemiantes','Anticoagulantes','Diuréticos','Broncodilatadores','Corticosteroides','Psicotrópicos','Quimioterápicos','Vacinas','Interações Medicamentosas','Reações Adversas','Anafilaxia','Medicamentos de Alto Alerta','Farmacocinética','Farmacodinâmica','Receituário e Prescrições','Erros de Medicação','Farmacovigilância','Medicamentos Controlados'],
+semi:['Sinais Vitais','Aferição de PA','Verificação de Pulso','Frequência Respiratória','Temperatura Corporal','SpO2','Exame Cardíaco','Exame Respiratório','Exame Abdominal','Exame Neurológico','Ausculta','Palpação','Percussão','Inspeção Clínica','Coleta de Exames','Punção Venosa','Acesso Venoso Central','Curativos','Tipos de Feridas','Cicatrização','Técnica Asséptica','Sondagem Nasogástrica','Sondagem Vesical','Oxigenoterapia','Procedimentos Básicos'],
+clin:['Hipertensão Arterial','Diabetes Mellitus','Dislipidemia','Asma','DPOC','Insuficiência Cardíaca','Doença Renal Crônica','Anemias','Hipotireoidismo','Hipertireoidismo','Obesidade','Gastrite e Úlcera','Hepatopatias','Cefaleias','Epilepsia','Acidente Vascular Cerebral','Doença Arterial Coronariana','Arritmias','Artrite Reumatoide','Lúpus','Fibromialgia','Distúrbios Hidroeletrolíticos','Síncope','Dor Crônica','Tireoidites'],
+infec:['Princípios de Infecção','Bacteriologia Clínica','Virologia Clínica','Parasitologia','Micoses','Dengue','Zika e Chikungunya','Malária','Tuberculose','HIV/AIDS','Hepatites Virais','Sífilis','Infecção Hospitalar','Sepse','Meningites','Endocardite','Pneumonias Infecciosas','Infecção Urinária','Infecções de Pele','Resistência Antimicrobiana','Precauções e Isolamento','Doenças Emergentes','Vigilância Epidemiológica','Notificação Compulsória','Doenças Imunopreveníveis'],
+diag:['Hemograma Completo','Bioquímica Sanguínea','Função Renal Laboratorial','Função Hepática Laboratorial','Coagulograma','Urinálise','Exames Microbiológicos','Sorologias','Gasometria Arterial','Marcadores Cardíacos','Raio-X de Tórax','Raio-X de Abdome','Tomografia Computadorizada','Ressonância Magnética','Ultrassonografia','ECG Interpretação','Espirometria','Ecocardiograma','Teste Ergométrico','Holter e MAPA','Endoscopia e Colonoscopia','Anatomopatológico','Citologia','Líquor e Punção Lombar','Biópsia'],
+urg:['RCP Adulto','RCP Pediátrica','Suporte Básico de Vida','DEA e Desfibrilação','Engasgo e Heimlich','Hemorragias','Fraturas e Imobilização','Queimaduras','Afogamento','Choque Elétrico','Intoxicações','Picadas de Animais','AVC Isquêmico','AVC Hemorrágico','Infarto Agudo','Arritmias Graves','Crise Asmática','Cetoacidose Diabética','Convulsões','Trauma Craniano','Trauma Abdominal','Pneumotórax','Embolia Pulmonar','PCR','Triagem Manchester'],
+cirur:['CME','Esterilização e Desinfecção','Instrumental Cirúrgico','Paramentação','Campo Estéril','Anestesia Geral','Raquidiana','Peridural','Recuperação Pós-anestésica','Complicações PO','Deiscência de Sutura','ISC','TVP','Profilaxia de TVP','Jejum Pré-operatório','Checklist Cirúrgico','Sala de Recuperação','Drenos Cirúrgicos','Curativo PO','Analgesia PO','Náusea e Vômito PO','Íleo Paralítico','Retenção Urinária PO','Classificação ASA','Tempo Cirúrgico Seguro'],
+saude:['SUS Princípios','Atenção Primária','Estratégia Saúde Família','NASF','UPA e SAMU','Vigilância Epidemiológica','Vigilância Sanitária','Imunização','Calendário Vacinal','Notificação Compulsória','Indicadores de Saúde','Determinantes Sociais','Promoção da Saúde','Prevenção de Doenças','Epidemiologia Básica','Territorialização','Mapa da Saúde','Participação Social','Conselhos de Saúde','Pacto pela Saúde','Redes de Atenção','Regionalização','Financiamento SUS','PNH','Educação em Saúde'],
+mulher:['Pré-Natal','Parto Normal','Cesariana','Puerpério','Aleitamento Materno','Planejamento Reprodutivo','Métodos Contraceptivos','Violência Obstétrica','Direitos Reprodutivos','Câncer de Mama','Câncer de Colo Útero','ISTs na Mulher','Endometriose','Miomas','Gestação de Alto Risco','Diabetes Gestacional','Pré-eclâmpsia','Hemorragia Pós-parto','Depressão Pós-parto','Menopausa','Climatério','Adolescência e Sexualidade','Teste do Pezinho','Puericultura Neonatal','Rede Cegonha'],
+crianca:['Crescimento Infantil','Desenvolvimento Neuropsicomotor','Caderneta da Criança','Puericultura','Desnutrição Infantil','Obesidade Infantil','Infecções Respiratórias','Diarreia e Desidratação','IRA e Pneumonia','Meningite','Sarampo','Coqueluche','Paralisia Cerebral','Autismo','TDAH','Doenças Congênitas','Triagem Neonatal','Acidentes na Infância','Violência contra Crianças','ECA e Proteção','Alimentação Complementar','Amamentação Exclusiva','Febre na Criança','Convulsão Febril','Imunização Infantil'],
+idoso:['Estatuto do Idoso','Envelhecimento Saudável','Sarcopenia','Osteoporose','Demências','Alzheimer','Parkinson','Polifarmácia','Quedas no Idoso','Incontinência Urinária','Úlceras por Pressão','Depressão no Idoso','Isolamento Social','Nutrição Geriátrica','Disfagia','Delirium','Síndrome da Fragilidade','Cuidados Paliativos','ILPI','Violência contra Idosos','Capacidade Funcional','AVDs e AIVDs','Reabilitação Geriátrica','Medicamentos Inapropriados','Rede de Atenção ao Idoso'],
+mental:['Reforma Psiquiátrica','CAPS','Transtorno Depressivo','Transtorno de Ansiedade','Esquizofrenia','Transtorno Bipolar','TOC','TEPT','Transtornos Alimentares','Dependência Química','Álcool e Drogas','Redução de Danos','Suicídio e Prevenção','CVV e Acolhimento','Internação Voluntária','Leito de Saúde Mental','Terapia Ocupacional','Grupos Terapêuticos','Matriciamento','Saúde Mental na APS','Estigma e Preconceito','Medicação Psiquiátrica','Contenção Mecânica','Acolhimento em Crise','Residência Terapêutica'],
+etica:['Código de Ética Médica','Bioética','Autonomia do Paciente','Beneficência','Não Maleficência','Justiça','Sigilo Médico','Consentimento Informado','Diretivas Antecipadas','Ortotanásia','Eutanásia e Distanásia','Negligência e Imperícia','Imprudência','Responsabilidade Civil','Responsabilidade Penal','Prontuário Legal','Erro Médico','Direitos do Paciente','Relação Médico-Paciente','Comissão de Ética Médica','Pesquisa em Seres Humanos','Resolução CNS 466','Publicidade Médica','Deveres do Plantonista','Legislação do SUS'],
+nutri:['Nutrição Clínica','Dietas Hospitalares','Sondas Enterais','Nutrição Parenteral','Avaliação Nutricional','IMC e Antropometria','Desnutrição Hospitalar','Obesidade e Comorbidades','Diabetes e Dieta','HAS e Restrição Sódica','Disfagia e Consistência','Aleitamento e Nutrição','Nutrição na Gestação','Nutrição do Idoso','Nutrição Pediátrica','Suplementação','Micronutrientes','Hidratação','Jejum e Realimentação','Nutrição em UTI','Nutrição Oncológica','Nutrição Renal','Nutrição Hepática','Educação Nutricional','Segurança Alimentar'],
+admin:['Gestão em Saúde','Gestão Hospitalar','Dimensionamento Médico','Escalas e Plantões','Liderança Médica','Gestão da Qualidade','Auditoria Médica','Custos em Saúde','Logística de Suprimentos','Gestão de Resíduos','Planejamento Estratégico','Indicadores de Gestão','Acreditação Hospitalar','Gestão de Pessoas','Conflitos e Mediação','Tomada de Decisão','Riscos Assistenciais','Protocolos Operacionais','Fluxos e Processos','Gestão de Leitos','Regulação em Saúde','Contratos e Convênios','Gestão Financeira','Inovação em Saúde','Compliance em Saúde'],
+pesquisa:['Metodologia Científica','Tipos de Estudo','Revisão Bibliográfica','Projeto de Pesquisa','Ética em Pesquisa','CEP e CONEP','Termo de Consentimento','Coleta de Dados','Análise Estatística','Artigo Científico','Normas ABNT','Referencial Teórico','Hipótese e Variáveis','Amostragem','Pesquisa Qualitativa','Pesquisa Quantitativa','Pesquisa-Ação','Estudo de Caso','Evidências Clínicas','Medicina Baseada em Evidências','Disseminação de Resultados','Bancos de Dados','Indexadores','Escrita Acadêmica','Pôster Científico'],
+tecnol:['Prontuário Eletrônico','Telemedicina','Telessaúde','Aplicativos de Saúde','Wearables e Monitoramento','Simulação Realística','Impressão 3D em Saúde','Robótica Cirúrgica','Inteligência Artificial','Big Data em Saúde','Blockchain em Saúde','Realidade Virtual','Gamificação em Saúde','Interoperabilidade','LGPD e Saúde Digital','Segurança da Informação','Usabilidade em Saúde','Inovação Tecnológica','Healthtechs','Dispositivos Médicos','Certificação Digital','Cloud Computing','IoT em Saúde','Transformação Digital','Futuro da Tecnologia']
+};
+
+var NAV_PHASES = [
+{id:'np1',name:'Regulamentos Militares',icon:'📜',desc:'Hierarquia, disciplina, estatuto e regulamentos da MB.'},
+{id:'np2',name:'Medicina Naval',icon:'⚓',desc:'Saúde em ambiente naval, medicina de bordo e protocolos.'},
+{id:'np3',name:'Socorros Navais',icon:'🆘',desc:'Emergências em alto mar, resgate aquático e trauma naval.'},
+{id:'np4',name:'Saúde Ocupacional Naval',icon:'🛡️',desc:'NR-30, riscos ocupacionais, EPIs e saúde do marinheiro.'},
+{id:'np5',name:'Farmácia Naval',icon:'💊',desc:'Gestão de medicamentos a bordo e logística naval.'},
+{id:'np6',name:'Medicina em Combate',icon:'🎖️',desc:'Medicina tática, ferimentos de guerra e evacuação.'},
+{id:'np7',name:'Saúde Mental Militar',icon:'🧠',desc:'Resiliência, estresse operacional e apoio psicológico.'},
+{id:'np8',name:'Concurso e Carreira',icon:'🎓',desc:'Edital, provas, inspeção de saúde e vida militar.'},
+{id:'np9',name:'Navios e Submarinos',icon:'🚢',desc:'Ambiente confinado e medicina hiperbárica.'},
+{id:'np10',name:'Aviação Naval',icon:'✈️',desc:'Medicina aeroespacial e evacuação aérea.'},
+{id:'np11',name:'Operações Anfíbias',icon:'🏖️',desc:'Saúde em operações ribeirinhas e tropicais.'},
+{id:'np12',name:'Legislação Naval',icon:'⚖️',desc:'Direito militar e normas internacionais.'},
+{id:'np13',name:'Medicina Subaquática',icon:'🤿',desc:'Mergulho militar, descompressão e resgate subaquático.'},
+{id:'np14',name:'Logística de Saúde Naval',icon:'📦',desc:'Suprimentos, evacuação médica e hospitais navais.'},
+{id:'np15',name:'Epidemiologia Naval',icon:'🦠',desc:'Vigilância, surtos a bordo e controle de doenças.'},
+{id:'np16',name:'Defesa QBRN',icon:'☣️',desc:'Emergências químicas, biológicas, radiológicas e nucleares.'},
+{id:'np17',name:'Telemedicina Naval',icon:'📡',desc:'Teleconsulta, telediagnóstico e saúde digital a bordo.'},
+{id:'np18',name:'Treinamento e Simulação',icon:'🎯',desc:'Capacitação médica naval e simulação de emergências.'},
+{id:'np19',name:'Saúde da Tripulação',icon:'⚓',desc:'Aptidão física, exames periódicos e bem-estar militar.'},
+{id:'np20',name:'História da Medicina Naval',icon:'🏛️',desc:'Origens, pioneiros e o futuro da medicina naval brasileira.'}
+];
+
+var NAV_PHASE_TOPICS = [
+['Estatuto dos Militares','Regulamento Disciplinar MB','Hierarquia e Disciplina','Uniformes e Apresentação','Formatura e Continência','Regulamento Interno MB','Código de Honra Militar','Direitos dos Militares','Deveres dos Militares','Promoções e Progressão','Reformas e Transferências','Licenças e Afastamentos','Punições Disciplinares','Recursos Administrativos','Conselho de Justificação','Conselho de Disciplina','Agregação e Reversão','Situação Militar','Compromisso de Posse','Juramento Militar','Símbolos e Heráldica','Cerimonial Militar','Precedência Militar','Correspondência Militar','Ética Militar Básica'],
+['Saúde Naval Introdução','Medicina a Bordo','Protocolos Navais de Saúde','Inspeção de Saúde Naval','Medicina Preventiva Naval','Higiene Naval','Epidemiologia Naval Básica','Prontidão Operacional Saúde','Saúde em Missões Navais','Vigilância em Saúde Naval','Atendimento Ambulatorial Naval','Urgência Naval Básica','Saúde Bucal Naval','Medicina Laboratorial Naval','Imunização Naval','Saúde Ocular Naval','Saúde Auditiva Naval','Dermatologia Naval','Ortopedia Naval Básica','Cardiologia Naval','Neurologia Naval Básica','Pneumologia Naval','Gastroenterologia Naval','Endocrinologia Naval','Medicina Tropical Naval'],
+['RCP em Ambiente Naval','Afogamento e Resgate Aquático','Trauma em Alto Mar','Hipotermia Naval','Mal de Descompressão','Intoxicação por Monóxido','Queimaduras Químicas Navais','Evacuação Aeromédica Naval','Suporte Avançado Naval','Emergências Coletivas Navais','Hemorragia Naval','Fraturas em Alto Mar','Ferimentos Penetrantes Navais','Choque Anafilático Naval','Crise Convulsiva Naval','IAM em Ambiente Naval','AVC em Ambiente Naval','Insolação e Exaustão','Choque Elétrico Naval','Mordeduras Marinhas','Envenenamento Naval','Asfixia Naval','Pneumotórax Naval','Estado de Choque Naval','Triagem Naval de Emergência'],
+['NR-30 Segurança Aquaviária','Riscos Físicos a Bordo','Riscos Químicos Navais','EPIs Navais','Perda Auditiva Ocupacional','Fadiga e Sono Naval','Ergonomia Naval','Acidentes de Trabalho Naval','Doenças Profissionais Navais','Programa Saúde Ocupacional','PPRA Naval','PCMSO Naval','CIPA Naval','Mapa de Riscos Naval','Vibração e Ruído Naval','Radiação Naval','Calor e Frio Ocupacional','Substâncias Tóxicas Navais','Espaços Confinados Navais','Trabalho em Altura Naval','Manuseio de Cargas Naval','Proteção Respiratória Naval','Proteção Dérmica Naval','Acidente Biológico Naval','CAT e Notificação Naval'],
+['Farmácia de Bordo','Controle de Medicamentos Navais','Cadeia de Frio Naval','Suprimentos Médicos Navais','Estocagem Marítima','Dispensação Naval','Interações Medicamentosas Navais','Kit Médico de Emergência','Antídotos e Soros Navais','Gestão de Validade Naval','Antibióticos Navais','Analgésicos Navais','Psicotrópicos Navais','Antimaláricos Navais','Antivenenos Navais','Controlados Navais','Prescrição Naval','Farmacovigilância Naval','Reconstituição Naval','Diluição Naval','Via Intramuscular Naval','Via Intravenosa Naval','Via Oral Naval','Via Tópica Naval','Armazenamento Naval'],
+['Medicina Tática Naval','Ferimentos por Arma de Fogo','Explosões e Blast Injury','Hemorragia Tática','Torniquete Tático','Triagem em Combate','Evacuação de Feridos','Cuidados sob Fogo','Zonas de Atendimento Tático','Bandagem Tática','Toracostomia Tática','Acesso Venoso Tático','Analgesia Tática','Imobilização Tática','Transporte Tático','Comunicação Tática','Equipamento Tático Individual','Proteção Balística','Defesa Química NBQ','Defesa Biológica NBQ','Defesa Nuclear NBQ','Descontaminação','Múltiplas Vítimas','Hospital de Campanha Naval','Estresse Agudo de Combate'],
+['Resiliência Militar Naval','Estresse Operacional Naval','TEPT em Militares','Suicídio nas Forças Armadas','Apoio Psicológico Naval','Burnout Militar','Readaptação Pós-missão','Liderança e Saúde Mental','Sono e Vigília Naval','Descompressão Psicológica','Ansiedade Militar','Depressão Militar','Abuso de Substâncias Militar','Luto Militar','Conflitos Interpessoais','Assédio no Ambiente Militar','Estratégias de Coping','Mindfulness Militar','Terapia Cognitivo-Comportamental','Grupos de Apoio Mútuo','Família e Saúde Mental','Reintegração Social','Estigma em Saúde Mental','Primeiros Socorros Psicológicos','Bem-estar Militar'],
+['Edital Medicina MB','Prova Objetiva Estratégia','Prova Física Preparação','Inspeção de Saúde Requisitos','Documentação Necessária MB','Carreira Oficial Médico MB','Estágio de Adaptação MB','Vida Militar Dia a Dia','Remuneração e Benefícios MB','Missões Internacionais MB','Curso de Formação','Residência Médica Naval','Especializações Navais','Mestrado e Doutorado Naval','Pesquisa Naval','Intercâmbio Internacional','Transferências Navais','Comissões Navais','Adicional Militar','Férias e Licenças MB','Aposentadoria Militar','Reserva Remunerada','Reforma Militar','Quadro de Médicos da MB','Quadro Técnico Naval'],
+['Ambiente Confinado Naval','Saúde Submarina','Medicina Hiperbárica','Doenças da Pressão','Ventilação em Submarinos','Claustrofobia e Adaptação','Nutrição em Submarinos','Exercícios em Espaço Reduzido','Emergências em Submersão','Resgate Subaquático','Classes de Navios MB','Organização de Bordo','Rotina de Bordo','Higiene de Bordo','Alimentação de Bordo','Sono em Movimento','Enjoo de Mar','Qualidade do Ar','Radiação em Submarinos','Ruído em Submarinos','Temperatura em Submarinos','Comunicação Submarina','Evacuação de Submarino','Treinamento Submarino','Psicologia Submarina'],
+['Medicina Aeroespacial Naval','Evacuação Aérea Naval','Fisiologia de Voo','Hipóxia de Altitude','Aceleração e Desaceleração','Barotrauma Aéreo','Enjoo de Movimento Aéreo','Equipamentos de Oxigênio','Assento Ejetor','Transporte Aeromédico Naval','Helicópteros Navais','Aviões Navais','Paraquedismo Naval','Busca e Salvamento Aéreo','Inspeção de Saúde para Voo','Limitações Fisiológicas','Visão Noturna Naval','Orientação Espacial','Fadiga de Voo','Pressurização de Cabine','Temperatura em Altitude','Ruído Aeronáutico','Vibração Aeronáutica','Sobrevivência na Selva','Sobrevivência no Mar'],
+['Saúde em Operações Ribeirinhas','Doenças Tropicais Navais','Malária e Dengue Naval','Leptospirose e Esquistossomose','Água Potável em Campo','Saneamento em Operações','Proteção contra Vetores','Acidentes com Fauna','Exaustão Térmica Naval','Resposta a Desastres','Operações Humanitárias Navais','Ajuda Humanitária','Logística de Emergência','Acampamento Militar','Purificação de Água','Alimentação em Campo','Higiene em Campo','Latrina de Campo','Hospital de Campanha','Enfermaria de Campanha','Evacuação Terrestre','Comunicações em Campo','Saúde em Camuflagem','Proteção Solar Naval','Hidratação Operacional'],
+['Direito Militar Brasileiro','Justiça Militar da União','Código Penal Militar','Transgressões Disciplinares','Processo Administrativo Militar','Convenções Internacionais','Direito Humanitário Naval','Tribunal Militar','Recursos e Prazos Militares','Legislação Comparada Naval','Normas NATO de Saúde','Protocolos ONU de Saúde','Acordos Bilaterais','Jurisprudência Militar','Atualização Legislativa Naval','Lei de Organização Militar','Estatuto dos Pensionistas','Direito Previdenciário Militar','Responsabilidade Civil Militar','Crime Militar','Inquérito Policial Militar','Audiência de Custódia Militar','Defensoria Militar','Ministério Público Militar','Contencioso Administrativo Militar'],
+['Mergulho Militar','Fisiologia do Mergulho','Doença Descompressiva','Embolia Gasosa','Narcose por Nitrogênio','Toxicidade do Oxigênio','Tabelas de Descompressão','Câmara Hiperbárica','Oxigenoterapia Hiperbárica','Barotrauma de Mergulho','Equipamentos de Mergulho','Segurança em Mergulho','Resgate de Mergulhador','Medicina de Resgate Subaquático','Aptidão para Mergulho','Mergulho Saturado','Sinus Barotrauma','Otite Barotraumática','Edema Pulmonar de Imersão','Hipotermia em Mergulho','Planejamento de Mergulho Médico','Suporte Médico ao Mergulho','Acidentes de Mergulho','Recompressão de Emergência','Medicina Subaquática Avançada'],
+['Logística Médica Naval','Cadeia de Suprimentos de Saúde','Evacuação Médica EVAM','Transporte de Pacientes','Estoque de Emergência','Hospital Naval','Ambulatório Naval','Enfermaria de Bordo','Material Médico Descartável','Manutenção de Equipamentos Médicos','Planejamento Logístico','Operações de Apoio à Saúde','Ajuda Humanitária Logística','Gestão de Recursos','Indicadores Logísticos','Navio-Hospital','Missão de Saúde Ribeirinha','Distribuição de Medicamentos','Controle de Estoque Médico','Licitações em Saúde','Gestão de Farmácia Naval','Rede Fria Logística','Evacuação Inter-hospitalar','Planejamento de Missão Médica','Logística em Desastres'],
+['Vigilância Epidemiológica Naval','Surtos a Bordo','Investigação de Surto','Doenças Transmissíveis em Navios','Isolamento e Quarentena Naval','Notificação de Agravos Naval','Indicadores Epidemiológicos','Medidas de Controle','Vacinação de Tripulações','Saúde do Viajante Naval','Portos e Fronteiras','Vigilância Sanitária Naval','Análise de Dados de Saúde','Boletins Epidemiológicos','Prevenção de Epidemias','Vigilância de Síndromes','Monitoramento de Tripulação','Rastreio de Contactantes','Medicina de Viagem','Perfil Epidemiológico Naval','Sistemas de Informação Naval','Alerta Sanitário Naval','Controle de Vetores a Bordo','Vigilância Alimentar Naval','Resposta Rápida Naval'],
+['Defesa Química','Defesa Biológica','Defesa Nuclear','Defesa Radiológica','Agentes Nerveosos','Agentes Sufocantes','Vesicantes','Antraz','Botulismo','Radiação Ionizante','Síndrome Aguda da Radiação','Descontaminação','EPI para QBRN','Detecção de Agentes','Triagem QBRN','Antídotos QBRN','Atropina e Pralidoxima','Profilaxia Pós-exposição','Zonas de Exclusão','Protocolos de Evacuação QBRN','Monitoramento Radiológico','Biodosimetria','Ataque Químico em Navio','Emergência Nuclear Naval','Preparo QBRN da Tripulação'],
+['Telemedicina a Bordo','Teleconsulta Naval','Telediagnóstico','Telemonitoramento','Comunicação Satelital em Saúde','Segurança de Dados Naval','Prontuário Eletrônico Naval','Teleorientação','Segunda Opinião Remota','Equipamentos de Telessaúde','Telecirurgia','Emergências Remotas','Conectividade em Alto Mar','Protocolos de Teleatendimento','Ética em Telemedicina','Telessaúde Militar','Tele-ECG Naval','Tele-dermatologia Naval','Tele-psiquiatria Naval','Registro Digital Naval','Inteligência Artificial Naval','Robótica Médica Naval','Tele-educação Médica','Rede de Telessaúde MB','Limitações da Telemedicina Naval'],
+['Treinamento Médico Naval','Simulação Realística','Manequins e Simuladores','Treinamento de RCP Naval','Simulação de Emergências','Exercícios Militares de Saúde','Capacitação Continuada','Treinamento de Habilidades','Avaliação de Competências','Instrução de Socorros','Treinamento de Evacuação','Simulação de Combate','Certificação Médica Naval','Educação Médica Continuada','Cenários de Treinamento','Simulação de Desastres','Treinamento em Câmara Hiperbárica','Simulação de QBRN','Exercício de Triage','Instrutor Naval de Saúde','Metodologias Ativas','Debriefing em Simulação','Treinamento de Equipe','Simulação de Submarino','Avaliação de Desempenho Médico'],
+['Saúde do Marinheiro','Exames Periódicos','Aptidão Física Militar','Nutrição da Tripulação','Sono e Escalas de Quarto','Ergonomia a Bordo','Saúde Bucal da Tripulação','Saúde Ocular Naval','Saúde Auditiva Naval','Prevenção de Doenças Crônicas','Vacinação da Tripulação','Bem-estar Emocional','Clima Organizacional','Atividade Física Militar','Readaptação de Militares','Controle de Peso Militar','Tabagismo na Tripulação','Álcool e Serviço Militar','Hidratação do Marinheiro','Saúde da Mulher Militar','Gestante Militar','Licença Saúde Militar','Junta de Inspeção de Saúde','Perfil de Saúde da Tripulação','Programa de Qualidade de Vida'],
+['Origens da Medicina Naval','Medicina Naval no Brasil','Hospital Naval Central','Corpo de Saúde da Marinha','Grandes Epidemias Navais','Medicina nas Grandes Navegações','Navios-Hospital na História','Pioneiros da Medicina Naval','Medicina Naval na 2ª Guerra','Missões de Paz e Saúde Naval','Pesquisa Médica Naval','Patrimônio Histórico Naval','Museus e Acervos Navais','Formação Médica Naval Histórica','Futuro da Medicina Naval','Medicina Naval no Império','Escola de Saúde Naval','Grandes Médicos Navais','Evolução dos Tratamentos Navais','Tecnologia Médica Naval Histórica','Expedições Científicas Navais','Medicina Naval Comparada','Documentos Históricos Navais','Legado da Medicina Naval','Carreira Médica Naval Hoje']
+];
+
+var ROUTE_STEPS = [
+{id:'rs1',icon:'🌊',name:'Ponto de Partida',desc:'Onde você está hoje. Defina seu sonho e comece a jornada.'},
+{id:'rs2',icon:'📚',name:'Base de Conhecimentos',desc:'Biologia, Química, Física e Matemática do 9º ano ao Ensino Médio.'},
+{id:'rs3',icon:'🧠',name:'Preparação para Medicina',desc:'Anatomia, Fisiologia, Bioquímica e tudo que cai no vestibular.'},
+{id:'rs4',icon:'🎯',name:'Desafios e Simulados',desc:'Questões estilo ENEM e vestibular de Medicina.'},
+{id:'rs5',icon:'⚓',name:'Conhecimentos da Marinha',desc:'Regulamentos, história e cultura naval.'},
+{id:'rs6',icon:'🩺',name:'Meu Futuro como Médica da Marinha',desc:'A etapa final. Você está pronta!'}
+];
+
+var STUDY_STAGES = [
+{name:'9º Ano — Fundamentos',icon:'📘',topics:['Célula e Organização Celular','Sistemas do Corpo Humano Básico','Ecologia e Meio Ambiente','Genética Introdutória','Evolução Básica','Química: Atomística','Química: Ligações Químicas','Física: Cinemática','Física: Dinâmica','Matemática: Equações','Matemática: Geometria Básica','Interpretação de Textos','Redação Dissertativa','História da Ciência','Geografia e Saúde Pública']},
+{name:'1º Ano Médio',icon:'📗',topics:['Bioquímica Celular','Citologia Avançada','Histologia Básica','Fisiologia Humana Básica','Química Orgânica','Estequiometria','Termologia','Ondulatória','Funções Matemáticas','Logaritmos','Produção Textual','Literatura Brasileira','Sociologia da Saúde','Filosofia e Ética','Biologia Molecular']},
+{name:'2º Ano Médio',icon:'📙',topics:['Genética e Hereditariedade','Biotecnologia','Imunologia Básica','Microbiologia','Química: Soluções','Eletroquímica','Eletromagnetismo','Óptica','Probabilidade e Estatística','Análise Combinatória','Redação ENEM','Atualidades em Saúde','Epidemiologia Básica','Saúde Pública no Brasil','Bioética Introdutória']},
+{name:'3º Ano Médio',icon:'📕',topics:['Revisão de Biologia Completa','Revisão de Química Completa','Revisão de Física Completa','Revisão de Matemática Completa','Simulados ENEM','Simulados Vestibular Medicina','Técnicas de Estudo','Gestão de Tempo para Provas','Controle de Ansiedade','Interpretação de Questões','Redação Nota 1000','Atualidades e Ciências','Biologia Molecular Avançada','Fisiologia Avançada','Plano de Estudos Final']},
+{name:'Pré-Faculdade',icon:'🎓',topics:['Anatomia Sistêmica','Anatomia Topográfica','Fisiologia Médica','Bioquímica Médica','Histologia e Embriologia','Imunologia Médica','Patologia Geral','Farmacologia Básica','Semiologia Médica','Propedêutica','Saúde Coletiva','Epidemiologia Clínica','Bioestatística','Metodologia Científica','Introdução à Clínica Médica']}
+];
+
+var MISSION_BANKS = {
+rs2:[
+{icon:'🩺',q:'O que é o coração?',o:['Um órgão muscular que bombeia sangue','Um osso do peito','Uma glândula digestiva','Um músculo do braço'],c:0,e:'O coração é um órgão muscular oco que bombeia sangue através dos vasos sanguíneos.'},
+{icon:'🫁',q:'Qual é a função dos pulmões?',o:['Digerir alimentos','Realizar trocas gasosas (hematose)','Produzir hormônios','Filtrar o sangue'],c:1,e:'Os pulmões realizam a hematose: captam O₂ e eliminam CO₂.'},
+{icon:'🧠',q:'O que faz o sistema nervoso?',o:['Produz células do sangue','Coordena e controla as funções do corpo','Digere nutrientes','Filtra toxinas'],c:1,e:'O sistema nervoso coordena todas as funções corporais.'},
+{icon:'🦴',q:'Quantos ossos tem o corpo humano adulto?',o:['106','206','306','156'],c:1,e:'O esqueleto humano adulto possui 206 ossos.'},
+{icon:'🩸',q:'Qual é a função do sangue?',o:['Dar cor ao corpo','Transportar nutrientes, gases e defender o organismo','Produzir saliva','Gerar calor'],c:1,e:'O sangue transporta O₂, nutrientes, hormônios e atua na defesa.'}
+],
+rs3:[
+{icon:'🫀',q:'Quais são as câmaras do coração?',o:['2 átrios e 2 ventrículos','3 átrios e 1 ventrículo','4 ventrículos','1 átrio e 3 ventrículos'],c:0,e:'O coração tem 4 câmaras: 2 átrios e 2 ventrículos.'},
+{icon:'🧬',q:'O que é DNA?',o:['Um tipo de proteína','A molécula que carrega a informação genética','Um carboidrato','Uma vitamina'],c:1,e:'O DNA contém as instruções genéticas dos seres vivos.'},
+{icon:'🦠',q:'Diferença entre bactéria e vírus?',o:['São a mesma coisa','Bactéria é célula viva; vírus precisa de hospedeiro','Vírus é maior','Bactéria não causa doenças'],c:1,e:'Bactérias são unicelulares; vírus são acelulares e parasitas obrigatórios.'},
+{icon:'⚗️',q:'O que é homeostase?',o:['Divisão celular','Capacidade de manter equilíbrio interno','Tipo de doença','Nome de um osso'],c:1,e:'Homeostase é manter o meio interno estável.'},
+{icon:'🔬',q:'O que é uma célula eucarionte?',o:['Sem núcleo definido','Com núcleo delimitado por membrana','Exclusiva de bactérias','Célula morta'],c:1,e:'Eucariontes possuem núcleo organizado com carioteca.'}
+],
+rs4:[
+{icon:'🎯',q:'No ciclo cardíaco, a sístole é:',o:['Relaxamento','Contração do coração','Pausa entre batimentos','Respiração'],c:1,e:'Sístole é a fase de contração que ejeta sangue.'},
+{icon:'🧪',q:'pH do sangue arterial normal:',o:['5,4','7,0','7,35 a 7,45','9,0'],c:2,e:'pH sanguíneo normal é levemente alcalino: 7,35–7,45.'},
+{icon:'🩻',q:'Exame que avalia atividade elétrica do coração:',o:['Raio-X','Eletrocardiograma (ECG)','Ressonância','Ultrassom'],c:1,e:'O ECG registra a atividade elétrica cardíaca.'},
+{icon:'💉',q:'Via de administração mais rápida:',o:['Oral','Intramuscular','Intravenosa','Tópica'],c:2,e:'Via intravenosa leva o fármaco direto à corrente sanguínea.'},
+{icon:'🫁',q:'Troca gasosa nos pulmões ocorre nos:',o:['Brônquios','Traqueia','Alvéolos pulmonares','Pleura'],c:2,e:'Hematose acontece nos alvéolos pulmonares.'}
+],
+rs5:[
+{icon:'⚓',q:'Número de emergência do SAMU:',o:['190','191','192','193'],c:2,e:'SAMU = 192. Bombeiros = 193. Polícia = 190.'},
+{icon:'📜',q:'Estatuto dos Militares regula:',o:['Apenas civis','Direitos, deveres e situação jurídica dos militares','Só oficiais generais','Só reservistas'],c:1,e:'Define direitos, deveres e situações jurídicas militares.'},
+{icon:'🏛️',q:'Patrona da enfermagem brasileira:',o:['Florence Nightingale','Anna Nery','Madre Teresa','Irmã Dulce'],c:1,e:'Anna Nery atuou na Guerra do Paraguai.'},
+{icon:'🎖️',q:'Disciplina militar significa:',o:['Punição constante','Obediência pronta e acatamento integral às ordens','Ignorar superiores','Liberdade total'],c:1,e:'Disciplina é acatamento integral às leis e ordens.'},
+{icon:'🚢',q:'Corpo de Saúde da Marinha inclui:',o:['Apenas médicos','Médicos, enfermeiros, farmacêuticos, dentistas e outros','Só cirurgiões','Só oficiais'],c:1,e:'Composto por diversos profissionais de saúde.'}
+]
+};
+
+function genLesson(topic, catName) {
+  var t = [
+    '<p><b>' + topic + '</b> é essencial na prática da ' + catName + '. Domine os conceitos para uma atuação médica segura.</p><ul><li>A avaliação criteriosa é sempre o primeiro passo.</li><li>Registre todas as condutas no prontuário.</li><li>Comunique alterações à equipe multiprofissional.</li><li>Siga protocolos clínicos vigentes.</li></ul>',
+    '<p>No estudo de <b>' + topic + '</b>, integre teoria e prática:</p><ul><li>Busque fundamentação em diretrizes atualizadas.</li><li>Execute procedimentos com segurança e precisão.</li><li>Mantenha monitoramento contínuo dos parâmetros clínicos.</li><li>Educação em saúde é ferramenta essencial.</li></ul>',
+    '<p><b>' + topic + '</b> exige conhecimento integrado:</p><ul><li>Identifique precocemente sinais de complicações.</li><li>Fundamente condutas em diretrizes reconhecidas.</li><li>Trabalhe colaborativamente com a equipe.</li><li>Avalie resultados e reavalie constantemente.</li></ul>'
+  ];
+  return t[Math.floor(Math.random() * t.length)];
+}
+
+function genQuestion(topic, catId, idx) {
+  var banks = {
+    fund:[{q:'No contexto de '+topic+', responsabilidade do médico?',o:['Tarefas administrativas','Diagnosticar, tratar e prevenir com base científica','Só prescrever exames','Só cirurgias'],c:1,e:'O médico diagnostica, trata e previne doenças.'},{q:topic+' e o SUS:',o:['Privatização','Integralidade e universalidade','Exclusividade','Lucratividade'],c:1,e:'SUS garante acesso universal e integral.'},{q:'Registro em prontuário serve para:',o:['Burocracia','Documentar raciocínio clínico e segurança jurídica','Substituir comunicação','Cumprir horário'],c:1,e:'Prontuário é documento legal e clínico.'}],
+    anato:[{q:'Unidade funcional básica em '+topic+':',o:['Tecido','Célula','Órgão','Sistema'],c:1,e:'A célula é a unidade básica da vida.'},{q:'Conhecimento de '+topic+' permite:',o:['Nada prático','Localizar estruturas e interpretar alterações','Só desenhar','Só memorizar'],c:1,e:'Anatomia é base do exame físico.'},{q:'Importância de '+topic+':',o:['Curiosidade','Identificar alterações e intervir','Sem aplicação','Só provas'],c:1,e:'Anatomia orienta diagnóstico e condutas.'}],
+    fisio:[{q:'Em '+topic+', compreender primeiro:',o:['Só nomes','Mecanismo funcional e alterações','Só memorizar','Nada'],c:1,e:'Fisiologia explica funcionamento e mudanças na doença.'},{q:'Alterações em '+topic+' levam a:',o:['Nada','Sinais e sintomas clínicos','Só estética','Exames normais'],c:1,e:'Disfunção fisiológica se manifesta clinicamente.'},{q:'Conhecimento de '+topic+' permite:',o:['Só aulas','Interpretar exames e definir condutas','Ignorar sintomas','Prescrever sem avaliar'],c:1,e:'Fisiologia é base do raciocínio clínico.'}],
+    farma:[{q:'Ao prescrever '+topic+', prioritário:',o:['Cor do comprimido','Paciente e medicamento corretos','Marca','Horário sem conferência'],c:1,e:'Os certos da medicação previnem erros.'},{q:topic+' requer atenção a:',o:['Só preço','Interações, dose e via','Cor da embalagem','Nome do laboratório'],c:1,e:'Segurança farmacológica é essencial.'},{q:'Reação adversa grave deve ser:',o:['Ignorada','Notificada e documentada imediatamente','Tratada sem registro','Só após alta'],c:1,e:'Notificação garante farmacovigilância.'}],
+    semi:[{q:'Assepsia em '+topic+' é importante porque:',o:['Opcional','Previne infecções e complicações','Conforto','Estética'],c:1,e:'Técnica asséptica previne IRAS.'},{q:topic+' deve ser realizado(a):',o:['Sem critério','Conforme protocolo e necessidade','Só se família pedir','Semanalmente'],c:1,e:'Procedimentos seguem indicação clínica.'},{q:'Após '+topic+', registre:',o:['Nada','Procedimento, resposta e intercorrências','Só horário','Só assinatura'],c:1,e:'Registro completo garante continuidade.'}],
+    clin:[{q:'Manejo de '+topic+':',o:['Tratar sem diagnóstico','Confirmar diagnóstico, classificar gravidade e tratar','Só observar','Sintomáticos sem investigar'],c:1,e:'Conduta segue diagnóstico e estratificação.'},{q:'Acompanhamento de '+topic+' exige:',o:['Consulta única','Monitoramento contínuo e ajuste','Nenhum seguimento','Só imagem'],c:1,e:'Doenças crônicas exigem acompanhamento regular.'},{q:'Descompensação em '+topic+' exige:',o:['Expectante','Avaliação imediata e intensificação','Alta','Reduzir medicação'],c:1,e:'Descompensação requer ação rápida.'}],
+    infec:[{q:'Conduta prioritária em '+topic+':',o:['Aguardar','Identificar agente e iniciar tratamento','Isolar sem avaliar','Antibiótico qualquer'],c:1,e:'Diagnóstico etiológico orienta tratamento.'},{q:'Suspeita de '+topic+':',o:['Ignorar notificação','Notificar se compulsória e tratar','Só sintomas leves','Encaminhar sem avaliar'],c:1,e:'Doenças compulsórias devem ser notificadas.'},{q:'Prevenção de '+topic+':',o:['Nenhuma medida','Vacinação, higiene e controle de transmissão','Só antibióticos','Isolamento geral'],c:1,e:'Prevenção combina imunização e higiene.'}],
+    diag:[{q:'Em '+topic+', considerar:',o:['Resultado isolado','Contexto clínico junto ao resultado','Ignorar clínica','Repetir sem indicação'],c:1,e:'Exames complementam a avaliação clínica.'},{q:'Indicação de '+topic+':',o:['Rotineira','Baseada em suspeita clínica fundamentada','Decidida pelo paciente','Evitada'],c:1,e:'Exames devem ter indicação clínica precisa.'},{q:'Resultado anormal em '+topic+':',o:['Ignorar','Correlacionar com clínica e definir conduta','Repetir sem avaliar','Alta'],c:1,e:'Resultados devem ser interpretados clinicamente.'}],
+    urg:[{q:'Prioridade em '+topic+':',o:['Ficha cadastral','Segurança da cena e ABCDE','Ligar família','Medicação oral'],c:1,e:'Segurança e avaliação primária primeiro.'},{q:topic+' requer atendimento em:',o:['24 horas','Minutos','1 semana','Quando houver vaga'],c:1,e:'Emergências exigem ação imediata.'},{q:'Erro mais grave em '+topic+':',o:['Demorar 1 min','Não reconhecer gravidade','Usar EPI','Chamar ajuda cedo'],c:1,e:'Subestimar gravidade pode ser fatal.'}],
+    cirur:[{q:'Cadeia asséptica em '+topic+' visa:',o:['Conforto','Prevenir infecção do sítio cirúrgico','Economia','Rapidez'],c:1,e:'ISC é evento adverso prevenível.'},{q:topic+' no perioperatório:',o:['Só técnica cirúrgica','Cuidados pré, intra e pós-operatórios','Só sala','Nenhuma ação'],c:1,e:'Perioperatório é continuum de cuidado.'},{q:'Complicação em '+topic+':',o:['Oculta','Detectada precocemente e comunicada','Só após alta','Normal'],c:1,e:'Detecção precoce reduz morbimortalidade.'}],
+    saude:[{q:topic+' no SUS:',o:['Seletividade','Universalidade e equidade','Privatização','Exclusividade'],c:1,e:'SUS é universal, integral e equânime.'},{q:'Atuação em '+topic+':',o:['UTI','Atenção Primária','Hospital terciário','Clínica privada'],c:1,e:'APS é porta de entrada do cuidado.'},{q:topic+' envolve:',o:['Só médicos','Equipe multiprofissional e comunidade','Só gestores','Ninguém'],c:1,e:'Saúde coletiva é intersetorial e participativa.'}],
+    mulher:[{q:'Acompanhamento em '+topic+':',o:['Só exame físico','Acolhimento, educação e monitoramento','Só prescrição','Nenhuma ação'],c:1,e:'Atuação médica na saúde da mulher é integral.'},{q:topic+' é direito garantido por:',o:['Boa vontade','Legislação e políticas públicas','Costume','Protocolo opcional'],c:1,e:'Direitos em saúde são assegurados por lei.'},{q:'Sinais de alerta em '+topic+':',o:['Bem-estar','Alterações que exigem avaliação imediata','Sintomas leves','Queixas irrelevantes'],c:1,e:'Reconhecer sinais de gravidade salva vidas.'}],
+    crianca:[{q:'Avaliação em '+topic+':',o:['Só peso','Crescimento, desenvolvimento e família','Só vacinação','Idade isolada'],c:1,e:'Puericultura é abordagem integral.'},{q:topic+' na infância:',o:['Mesma conduta do adulto','Abordagem específica por faixa etária','Sem particularidade','Tratamento geriátrico'],c:1,e:'Criança não é adulto em miniatura.'},{q:'Caderneta da Criança:',o:['Controle burocrático','Monitoramento integral de saúde','Registro escolar','Documento viagem'],c:1,e:'Instrumento de puericultura e vigilância.'}],
+    idoso:[{q:topic+' no idoso:',o:['Só doenças agudas','Multimorbidades, funcionalidade e contexto social','Só idade','Estética'],c:1,e:'Abordagem geriátrica é multidimensional.'},{q:'Estatuto do Idoso em '+topic+':',o:['Nenhum direito','Prioridade e proteção integral','Só desconto transporte','Direitos condicionais'],c:1,e:'Lei 10.741/2003 assegura direitos.'},{q:'Prevenção em '+topic+':',o:['Repouso absoluto','Atividade física, ambiente seguro e revisão medicamentosa','Isolamento','Suspender medicamentos'],c:1,e:'Prevenção geriátrica é multifatorial.'}],
+    mental:[{q:'Abordagem em '+topic+':',o:['Só medicamentosa','Psicossocial, humanizada e baseada em direitos','Internação prolongada','Punitiva'],c:1,e:'Reforma prioriza cuidado comunitário.'},{q:topic+' no CAPS:',o:['Só consulta','Atendimento multiprofissional e projeto terapêutico','Internação permanente','Triagem sem seguimento'],c:1,e:'CAPS oferece cuidado contínuo e territorial.'},{q:'Estigma em '+topic+':',o:['Isolamento','Educação, acolhimento e inclusão','Medicalização excessiva','Ignorar'],c:1,e:'Combate ao estigma é parte do tratamento.'}],
+    etica:[{q:topic+' fundamenta-se na:',o:['Conveniência pessoal','Dignidade humana e respeito','Lucro institucional','Hierarquia'],c:1,e:'Ética médica centra-se na dignidade.'},{q:'Violação de '+topic+':',o:['Sem consequência','Processo ético e responsabilização','Só advertência','Elogio'],c:1,e:'Infrações éticas têm consequências legais.'},{q:'Sigilo médico em '+topic+':',o:['Opcional','Dever legal e ético','Só cirurgiões','Não existe'],c:1,e:'Sigilo protege privacidade do paciente.'}],
+    nutri:[{q:'Avaliação nutricional em '+topic+':',o:['Só peso','Anamnese, antropometria e exames bioquímicos','Só IMC','Só calorias'],c:1,e:'Avaliação nutricional é multidimensional.'},{q:topic+' requer atenção a:',o:['Só calorias','Estado nutricional, necessidades e tolerância','Preferências','Nenhum parâmetro'],c:1,e:'Terapia nutricional é individualizada.'},{q:'Conduta em '+topic+':',o:['Ignorar nutrição','Avaliar, prescrever e monitorar evolução','Delegar sem acompanhar','Suspender alimentação'],c:1,e:'Médico avalia e prescreve terapia nutricional.'}],
+    admin:[{q:'Gestão eficiente em '+topic+':',o:['Improvisação','Planejamento, organização, liderança e controle','Boa vontade','Sem protocolos'],c:1,e:'Gestão segue funções administrativas clássicas.'},{q:topic+' em saúde visa:',o:['Só reduzir custos','Qualidade, segurança e eficiência','Controlar funcionários','Burocracia'],c:1,e:'Gestão foca qualidade e segurança.'},{q:'Indicadores em '+topic+':',o:['Punir','Monitorar desempenho e subsidiar melhorias','Formalidade','Arquivar'],c:1,e:'Indicadores orientam decisões baseadas em evidências.'}],
+    pesquisa:[{q:'Rigor metodológico em '+topic+':',o:['Resultados aleatórios','Validade, confiabilidade e reprodutibilidade','Rapidez','Publicação garantida'],c:1,e:'Metodologia rigorosa é fundamento da ciência.'},{q:topic+' com seres humanos exige:',o:['Só orientador','Comitê de Ética em Pesquisa (CEP)','Diretor do hospital','Nenhum órgão'],c:1,e:'Pesquisa com seres humanos requer aprovação ética.'},{q:'Medicina contribui em '+topic+':',o:['Só coleta dados','Produção de conhecimento aplicável ao paciente','Nenhuma contribuição','Só execução'],c:1,e:'Pesquisa médica transforma a prática clínica.'}],
+    tecnol:[{q:'Tecnologia em '+topic+' visa:',o:['Substituir profissionais','Melhorar qualidade, segurança e eficiência','Aumentar custos','Complexidade'],c:1,e:'Tecnologia é ferramenta a serviço do cuidado.'},{q:topic+' requer atenção a:',o:['Só custo','Privacidade, usabilidade e integração','Cor do dispositivo','Marca'],c:1,e:'Tecnologia deve ser segura, ética e integrada.'},{q:'Médico em '+topic+':',o:['Resistir inovação','Desenvolver competências digitais e pensamento crítico','Delegar à TI','Ignorar transformação'],c:1,e:'Letramento digital é competência essencial.'}],
+    naval:[{q:'Procedimento prioritário em '+topic+':',o:['Ignorar protocolos','Seguir regulamentos e protocolos navais vigentes','Improvisar','Aguardar ordem'],c:1,e:'Protocolos navais garantem segurança operacional.'},{q:topic+' na Marinha exige:',o:['Só medicina civil','Regulamentos militares, normas navais e competência técnica','Só legislação civil','Nenhum regulamento'],c:1,e:'Medicina naval integra excelência técnica e disciplina.'},{q:'Hierarquia em '+topic+':',o:['Não se aplica','Respeitada mantendo autonomia profissional','Substitui julgamento clínico','Irrelevante'],c:1,e:'Hierarquia e competência coexistem na medicina naval.'}]
+  };
+  var qs = banks[catId] || banks.fund;
+  var b = qs[idx % qs.length];
+  return { q: b.q, o: b.o.slice(), c: b.c, e: b.e };
+}
+
+var MED_MODULES = (function() {
+  var mods = [], id = 0;
+  for (var ci = 0; ci < MED_CATS.length; ci++) {
+    var cat = MED_CATS[ci], topics = expandTopics(MED_TOPICS[cat.id] || [], 25);
+    for (var ti = 0; ti < topics.length; ti++) {
+      mods.push({ id: 'e' + id, icon: cat.icon, name: topics[ti], cat: cat.name, catId: cat.id, color: cat.color, desc: topics[ti] + ' — ' + cat.name, isNaval: false,
+        lessons: [{ t: topics[ti] + ': Conceitos', html: genLesson(topics[ti], cat.name) }, { t: topics[ti] + ': Prática', html: genLesson(topics[ti] + ' na prática', cat.name) }, { t: topics[ti] + ': Atenção', html: genLesson('Condutas em ' + topics[ti], cat.name) }],
+        quiz: [genQuestion(topics[ti], cat.id, 0), genQuestion(topics[ti], cat.id, 1), genQuestion(topics[ti], cat.id, 2)]
+      }); id++;
+    }
+  }
+  return mods;
+})();
+
+var NAV_MODULES = (function() {
+  var mods = [], id = 0;
+  for (var pi = 0; pi < NAV_PHASES.length; pi++) {
+    var phase = NAV_PHASES[pi], ntopics = expandTopics(NAV_PHASE_TOPICS[pi] || [], 25);
+    for (var ni = 0; ni < ntopics.length; ni++) {
+      mods.push({ id: 'n' + id, icon: phase.icon, name: ntopics[ni], cat: phase.name, catId: 'naval_' + phase.id, color: '#2563eb', desc: ntopics[ni] + ' — Trilha Naval', isNaval: true, navalPhase: phase.id,
+        lessons: [{ t: ntopics[ni] + ': Fundamentos Navais', html: genLesson(ntopics[ni], 'Medicina Naval') }, { t: ntopics[ni] + ': Aplicação Militar', html: genLesson(ntopics[ni] + ' na Marinha', 'Medicina Naval') }, { t: ntopics[ni] + ': Protocolos Navais', html: genLesson('Protocolos de ' + ntopics[ni], 'Medicina Naval') }],
+        quiz: [genQuestion(ntopics[ni], 'naval', 0), genQuestion(ntopics[ni], 'naval', 1), genQuestion(ntopics[ni], 'naval', 2)]
+      }); id++;
+    }
+  }
+  return mods;
+})();
+
+var ACHS = [
+{id:'first',icon:'🎓',name:'Primeiros Passos',desc:'Leia 1 aula',test:function(s){return s.lessonsRead.length>=1;}},
+{id:'stud10',icon:'📖',name:'Dedicado',desc:'Leia 10 aulas',test:function(s){return s.lessonsRead.length>=10;}},
+{id:'stud50',icon:'📚',name:'Bibliófilo',desc:'Leia 50 aulas',test:function(s){return s.lessonsRead.length>=50;}},
+{id:'stud100',icon:'🧠',name:'Brilhante',desc:'Leia 100 aulas',test:function(s){return s.lessonsRead.length>=100;}},
+{id:'stud300',icon:'📕',name:'Enciclopédia',desc:'Leia 300 aulas',test:function(s){return s.lessonsRead.length>=300;}},
+{id:'quiz1',icon:'🩹',name:'1ª Vitória',desc:'Complete 1 desafio',test:function(s){return s.quizDone>=1;}},
+{id:'quiz10',icon:'🎯',name:'Desafiador',desc:'10 desafios',test:function(s){return s.quizDone>=10;}},
+{id:'quiz50',icon:'🏅',name:'Veterano',desc:'50 desafios',test:function(s){return s.quizDone>=50;}},
+{id:'quiz100',icon:'🏆',name:'Centurião',desc:'100 desafios',test:function(s){return s.quizDone>=100;}},
+{id:'seq5',icon:'🔥',name:'Em Chamas',desc:'5 acertos seguidos',test:function(s){return s.bestStreak>=5;}},
+{id:'seq10',icon:'☄️',name:'Imparável',desc:'10 acertos seguidos',test:function(s){return s.bestStreak>=10;}},
+{id:'perf',icon:'💯',name:'Perfeição',desc:'Gabarite 1 desafio',test:function(s){return s.perfect>=1;}},
+{id:'star10',icon:'⭐',name:'Colecionador',desc:'10 estrelas',test:function(s){return totalStars(s)>=10;}},
+{id:'star50',icon:'🌟',name:'Constelação',desc:'50 estrelas',test:function(s){return totalStars(s)>=50;}},
+{id:'star100',icon:'✨',name:'Galáxia',desc:'100 estrelas',test:function(s){return totalStars(s)>=100;}},
+{id:'lvl5',icon:'⚕️',name:'Caminho do Médico',desc:'Nível 5',test:function(s){return getLevel(s.xp)>=5;}},
+{id:'lvl10',icon:'🎖️',name:'Especialista',desc:'Nível 10',test:function(s){return getLevel(s.xp)>=10;}},
+{id:'naval1',icon:'⚓',name:'Recruta Naval',desc:'Complete 1 fase naval',test:function(s){return navPhasesCompleted(s)>=1;}},
+{id:'naval10',icon:'🎗️',name:'Oficial Médico Naval',desc:'Complete 10 fases navais',test:function(s){return navPhasesCompleted(s)>=10;}},
+{id:'navalall',icon:'🏴',name:'Almirante da Medicina',desc:'Complete todas as 20 fases navais',test:function(s){return navPhasesCompleted(s)>=NAV_PHASES.length;}}
+];
+
+function totalStars(s) { var t = 0; for (var k in s.modules) if (s.modules[k] && s.modules[k].stars) t += s.modules[k].stars; return t; }
+function navPhasesCompleted(s) { var count = 0; for (var pi = 0; pi < NAV_PHASES.length; pi++) { var allDone = true; for (var mi = 0; mi < NAV_MODULES.length; mi++) { if (NAV_MODULES[mi].navalPhase === NAV_PHASES[pi].id) { var sm = s.modules[NAV_MODULES[mi].id]; if (!sm || !sm.stars) { allDone = false; break; } } } if (allDone) count++; } return count; }
+
+function xpForLvl(l) { return Math.floor(80 * Math.pow(l, 1.5)); }
+function getLevel(xp) { var l = 1, total = 0; while (l < 99) { var need = xpForLvl(l); if (total + need > xp) break; total += need; l++; } return l; }
+function nextTh(l) { var t = 0; for (var i = 1; i <= l; i++) t += xpForLvl(i); return t; }
+function rankOf(l) { if (l <= 2) return 'Calouro(a)'; if (l <= 5) return 'Estudante de Medicina'; if (l <= 8) return 'Plantista'; if (l <= 12) return 'Interno(a)'; if (l <= 18) return 'Residente'; if (l <= 25) return 'Médico(a)'; return 'Lenda da Medicina'; }
+
+var curLvl = 1;
+function addXp(n) { S.xp += n; var nl = getLevel(S.xp); if (nl > curLvl) { curLvl = nl; levelUp(nl); } saveState(); updateHUD(); checkAch(); }
+function levelUp(l) { spawnConfetti(70); playSfx('level'); showModal('<div class="mico">⬆️</div><h2>SUBIU DE NÍVEL!</h2><div class="lvl-big">Nível ' + l + '</div><p style="text-align:center;margin-top:5px"><b style="color:var(--teal)">' + rankOf(l) + '</b></p><br><button class="btn btn-primary" data-action="close-modal">Continuar ▸</button>'); }
+
+var audioCtx = null;
+function beep(freq, dur, type, vol, delay) { if (!S.sound) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); var t = audioCtx.currentTime + (delay || 0); var osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = type || 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(vol || 0.1, t); gain.gain.exponentialRampToValueAtTime(0.0001, t + dur); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + dur + 0.02); } catch(e) {} }
+function playSfx(k) { if (k === 'click') beep(600, 0.05, 'square', 0.04); else if (k === 'ok') { beep(523, 0.08, 'sine', 0.1); beep(659, 0.08, 'sine', 0.1, 0.08); beep(784, 0.12, 'sine', 0.1, 0.16); } else if (k === 'bad') { beep(180, 0.18, 'sawtooth', 0.08); beep(140, 0.22, 'sawtooth', 0.07, 0.1); } else if (k === 'star') { beep(659, 0.1, 'sine', 0.1); beep(784, 0.1, 'sine', 0.1, 0.09); beep(988, 0.1, 'sine', 0.1, 0.18); } else if (k === 'level') { beep(523, 0.12, 'triangle', 0.1); beep(659, 0.12, 'triangle', 0.1, 0.1); beep(784, 0.12, 'triangle', 0.1, 0.2); beep(1046, 0.12, 'triangle', 0.1, 0.3); } else if (k === 'win') { beep(392, 0.14, 'triangle', 0.1); beep(523, 0.14, 'triangle', 0.1, 0.1); beep(659, 0.14, 'triangle', 0.1, 0.2); beep(784, 0.14, 'triangle', 0.1, 0.3); } }
+
+function toast(msg, gold) { var el = document.createElement('div'); el.className = 'toast' + (gold ? ' gold' : ''); el.innerHTML = msg; $('toasts').appendChild(el); setTimeout(function() { el.classList.add('out'); setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 400); }, 3000); }
+function showModal(html) { $('modalBox').innerHTML = html; $('modal-wrap').classList.add('show'); }
+function closeModal() { $('modal-wrap').classList.remove('show'); }
+function openHow() { showModal('<div class="mico">🧭</div><h2>Como Jogar</h2><div class="mrow"><span class="mi">🩺</span><span><b>Medicina:</b> 500 módulos para a faculdade.</span></div><div class="mrow"><span class="mi">⚓</span><span><b>Marinha:</b> 500 módulos em 20 fases navais.</span></div><div class="mrow"><span class="mi">🌊</span><span><b>Rota para o Sonho:</b> Sua jornada do 9º ano até ser médica da Marinha.</span></div><div class="mrow"><span class="mi">📖</span><span>Leia aulas (+5 XP). Desafios curam o paciente!</span></div><div class="mrow"><span class="mi">⭐</span><span>Ganhe ≥1⭐ para desbloquear o próximo módulo.</span></div><div class="mrow"><span class="mi">💙</span><span>Escreva sua <b>Carta para o Futuro</b>.</span></div><br><button class="btn btn-primary" data-action="close-modal">Entendi ▸</button>'); }
+function spawnConfetti(n) { var colors = ['#22d3ee','#2dd4a7','#fbbf24','#f472b6','#a78bfa','#ff5470','#2563eb','#38bdf8']; var container = $('confetti'); for (var i = 0; i < n; i++) { var c = document.createElement('div'); c.className = 'cf'; var sz = 4 + Math.random() * 6; c.style.width = sz + 'px'; c.style.height = (sz * 0.5) + 'px'; c.style.background = colors[i % colors.length]; c.style.left = (Math.random() * 100) + 'vw'; c.style.animationDuration = (1.8 + Math.random() * 2) + 's'; c.style.animationDelay = (Math.random() * 0.4) + 's'; container.appendChild(c); (function(el) { setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 4200); })(c); } }
+function floatXp(x, y, txt) { var el = document.createElement('div'); el.className = 'floatxp'; el.textContent = txt; el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 1000); }
+
+function go(screenId) { hideAllScreens(); var el = $('screen-' + screenId); if (el) el.classList.add('active'); document.body.classList.toggle('nohead', screenId === 'login' || screenId === 'home'); window.scrollTo({ top: 0 }); if (screenId === 'hub') renderHub(); if (screenId === 'progress') renderProgress(); playSfx('click'); }
+function updateHUD() { var l = getLevel(S.xp); $('lvlNum').textContent = l; var prev = l > 1 ? nextTh(l - 1) : 0, hi = nextTh(l), range = hi - prev; var p = range > 0 ? Math.min(100, Math.max(0, ((S.xp - prev) / range) * 100)) : 0; $('xpFill').style.width = p + '%'; $('xpTxt').textContent = S.xp + 'XP'; $('starCt').textContent = totalStars(S); $('sndBtn').textContent = S.sound ? '🔊' : '🔇'; }
+
+var activeTrack = 'enf', enfCat = 'all', enfSearch = '', enfDisplay = 48, navCat = 'all', navSearch = '', navDisplay = 48;
+
+function switchTrack(track) { activeTrack = track; $('tabEnf').className = 'track-tab' + (track === 'enf' ? ' on-enf' : ''); $('tabNav').className = 'track-tab' + (track === 'nav' ? ' on-nav' : ''); $('tabDream').className = 'track-tab' + (track === 'dream' ? ' on-dream' : ''); $('enfSection').style.display = track === 'enf' ? 'block' : 'none'; $('navSection').style.display = track === 'nav' ? 'block' : 'none'; $('dreamSection').style.display = track === 'dream' ? 'block' : 'none'; renderHub(); playSfx('click'); }
+function isUnlocked(modules, idx) { if (idx === 0) return true; var prev = modules[idx - 1]; var m = S.modules[prev.id]; return m && m.stars >= 1; }
+function lessonsReadOf(mod) { var count = 0; for (var i = 0; i < mod.lessons.length; i++) if (S.lessonsRead.indexOf(mod.id + ':' + i) >= 0) count++; return count; }
+function isNavPhaseComplete(phaseIdx) { var phase = NAV_PHASES[phaseIdx]; for (var mi = 0; mi < NAV_MODULES.length; mi++) { if (NAV_MODULES[mi].navalPhase === phase.id) { var sm = S.modules[NAV_MODULES[mi].id]; if (!sm || !sm.stars) return false; } } return true; }
+
+function renderDreamSection() {
+  var totalSteps = ROUTE_STEPS.length, completedSteps = Math.min(S.dreamRoute, totalSteps - 1);
+  var pct = totalSteps > 1 ? Math.round((completedSteps / (totalSteps - 1)) * 100) : 0;
+  $('dreamProgressBar').style.width = pct + '%'; $('dreamProgressText').textContent = pct + '% concluído';
+  var html = '';
+  for (var i = 0; i < ROUTE_STEPS.length; i++) {
+    var step = ROUTE_STEPS[i], done = i < S.dreamRoute, current = i === S.dreamRoute, locked = i > S.dreamRoute;
+    var dotCls = done ? 'done' : (current ? 'current' : 'locked'), contentCls = locked ? 'locked' : (done ? 'completed' : '');
+    var statusText = done ? '✅ Concluída' : (current ? '🟡 Em andamento' : '⚪ Bloqueada'), statusCls = done ? 'done' : (current ? 'current' : 'locked');
+    var connCls = i > 0 ? (i <= S.dreamRoute ? 'done' : '') : '';
+    if (i > 0) html += '<div class="route-step"><div class="route-line"><div class="route-connector ' + connCls + '"></div></div><div style="flex:1"></div></div>';
+    html += '<div class="route-step"><div class="route-line"><div class="route-dot ' + dotCls + '">' + step.icon + '</div></div><div class="route-content ' + contentCls + '" data-step="' + i + '"><h3>' + step.icon + ' ' + step.name + '</h3><p>' + step.desc + '</p><span class="route-status ' + statusCls + '">' + statusText + '</span></div></div>';
+  }
+  $('routeContainer').innerHTML = html;
+  $('routeContainer').onclick = function(e) { var rc = e.target.closest('.route-content'); if (!rc || rc.classList.contains('locked')) return; if (parseInt(rc.getAttribute('data-step')) === S.dreamRoute) { var mc = document.querySelector('.mission-card'); if (mc) mc.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+  renderMission(); renderDiario(); renderStudyStages();
+}
+
+function renderMission() {
+  var stepIdx = Math.min(S.dreamRoute, ROUTE_STEPS.length - 1), step = ROUTE_STEPS[stepIdx], bankKey = 'rs' + (stepIdx + 1), bank = MISSION_BANKS[bankKey], alreadyDone = !!S.dreamMissions[bankKey];
+  if (stepIdx >= ROUTE_STEPS.length - 1 && alreadyDone) { $('missionDesc').textContent = '🎉 Parabéns! Todas as etapas concluídas!'; $('missionQuestions').innerHTML = '<p style="font-size:13px;color:#7dd3fc;text-align:center;padding:20px">🩺 Continue estudando os módulos! ⚓💙</p>'; $('missionResult').classList.remove('show'); return; }
+  if (alreadyDone) { $('missionDesc').textContent = '✅ Etapa concluída! Clique em avançar.'; $('missionQuestions').innerHTML = ''; $('missionResult').classList.add('show'); $('missionResultText').textContent = 'Etapa "' + step.name + '" concluída.'; $('missionNextBtn').onclick = function() { completeMission(bankKey); }; return; }
+  $('missionDesc').textContent = '🧭 Etapa ' + (stepIdx + 1) + ' — ' + step.name; $('missionResult').classList.remove('show');
+  if (!bank) { $('missionQuestions').innerHTML = '<p style="font-size:12px;color:var(--mut)">Continue estudando!</p><button class="btn btn-dream btn-sm" style="margin-top:10px" id="skipMissionBtn">Concluir ▸</button>'; setTimeout(function() { var sb = $('skipMissionBtn'); if (sb) sb.onclick = function() { completeMission(bankKey); }; }, 50); return; }
+  var qHtml = '';
+  for (var qi = 0; qi < bank.length; qi++) { var mq = bank[qi]; qHtml += '<div class="mission-q" id="mq' + qi + '"><div class="q-text"><span>' + mq.icon + '</span> ' + mq.q + '</div><div class="mission-opts">'; for (var oi = 0; oi < mq.o.length; oi++) qHtml += '<button class="mission-opt" data-qi="' + qi + '" data-oi="' + oi + '">' + mq.o[oi] + '</button>'; qHtml += '</div><div class="mission-explain" id="me' + qi + '">' + mq.e + '</div></div>'; }
+  $('missionQuestions').innerHTML = qHtml;
+  var missionAnswered = 0, missionCorrect = 0, totalQ = bank.length;
+  $('missionQuestions').onclick = function(e) { var btn = e.target.closest('.mission-opt'); if (!btn || btn.disabled) return; var qi = parseInt(btn.getAttribute('data-qi')), oi = parseInt(btn.getAttribute('data-oi')), mq = bank[qi]; var allBtns = $('mq' + qi).querySelectorAll('.mission-opt'); for (var b = 0; b < allBtns.length; b++) allBtns[b].disabled = true; if (oi === mq.c) { allBtns[oi].classList.add('correct'); missionCorrect++; playSfx('ok'); } else { allBtns[oi].classList.add('wrong'); allBtns[mq.c].classList.add('correct'); playSfx('bad'); } $('me' + qi).classList.add('show'); missionAnswered++; if (missionAnswered >= totalQ) setTimeout(function() { finishMission(bankKey, missionCorrect, totalQ, step); }, 600); };
+}
+
+function finishMission(bankKey, correct, total, step) { S.dreamMissions[bankKey] = true; addXp(correct * 8); saveState(); playSfx('win'); spawnConfetti(50); $('missionResult').classList.add('show'); $('missionResultText').innerHTML = '🎉 ' + correct + '/' + total + ' corretas! +' + (correct * 8) + ' XP'; $('missionNextBtn').onclick = function() { completeMission(bankKey); }; }
+function completeMission(bankKey) { if (!S.dreamMissions[bankKey]) S.dreamMissions[bankKey] = true; S.dreamRoute = Math.min(S.dreamRoute + 1, ROUTE_STEPS.length); saveState(); playSfx('star'); toast('🏆 Etapa avançada na Rota!', true); if (S.dreamRoute >= ROUTE_STEPS.length) { spawnConfetti(120); var acc = getAccounts(), user = getCurrentUser(), userName = user && acc[user] ? acc[user].name : 'Estudante'; showModal('<div class="mico">🎉</div><h2>PARABÉNS, ' + escH(userName).toUpperCase() + '!</h2><p style="text-align:center;font-size:14px;line-height:1.7">Todas as etapas da <b>Rota para o Sonho</b> concluídas!<br><br>🩺⚓ Continue estudando!<br><br>💙 Nunca esqueça por que começou.</p><br><button class="btn btn-primary" data-action="close-modal">Continuar ▸</button>'); } renderDreamSection(); }
+
+function renderDiario() { var entries = S.diario || []; if (!entries.length) { $('diarioEntries').innerHTML = '<p style="font-size:11px;color:var(--mut)">Nenhuma carta ainda. 💙</p>'; return; } var html = ''; for (var i = entries.length - 1; i >= 0; i--) html += '<div class="diario-entry"><div class="date">' + entries[i].date + '</div><div class="text">' + escH(entries[i].text) + '</div><button class="del-btn" data-del="' + i + '">Remover</button></div>'; $('diarioEntries').innerHTML = html; $('diarioEntries').onclick = function(e) { var btn = e.target.closest('[data-del]'); if (!btn) return; S.diario.splice(parseInt(btn.getAttribute('data-del')), 1); saveState(); renderDiario(); playSfx('click'); }; }
+
+function renderStudyStages() {
+  var html = '';
+  for (var si = 0; si < STUDY_STAGES.length; si++) { var stage = STUDY_STAGES[si], doneCount = 0; for (var ti = 0; ti < stage.topics.length; ti++) if (S.studyDone.indexOf(stage.name + ':' + ti) >= 0) doneCount++; var pct = Math.round((doneCount / stage.topics.length) * 100); html += '<div class="study-stage"><div class="study-stage-header" data-stage="' + si + '"><span class="ss-icon">' + stage.icon + '</span><span class="ss-name">' + stage.name + '</span><span class="ss-pct">' + pct + '%</span><span class="ss-arrow">▸</span></div><div class="study-grid" id="sg' + si + '">'; for (var ti = 0; ti < stage.topics.length; ti++) { var topicDone = S.studyDone.indexOf(stage.name + ':' + ti) >= 0; html += '<div class="study-card' + (topicDone ? ' done' : '') + '" data-study="' + escH(stage.name + ':' + ti) + '"><div class="sc-title">' + stage.topics[ti] + '</div><div class="sc-status">' + (topicDone ? '✅ Estudado' : '⬜ Marcar') + '</div></div>'; } html += '</div></div>'; }
+  $('studyStages').innerHTML = html;
+  $('studyStages').onclick = function(e) { var card = e.target.closest('[data-study]'); if (card) { var key = card.getAttribute('data-study'), idx = S.studyDone.indexOf(key); if (idx >= 0) S.studyDone.splice(idx, 1); else { S.studyDone.push(key); addXp(2); toast('📚 +2 XP'); } saveState(); renderStudyStages(); playSfx('click'); return; } var header = e.target.closest('.study-stage-header'); if (header) { var si = header.getAttribute('data-stage'), grid = $('sg' + si); if (grid) { var isOpen = grid.classList.contains('open'); var allGrids = document.querySelectorAll('.study-grid'), allHeaders = document.querySelectorAll('.study-stage-header'); for (var g = 0; g < allGrids.length; g++) allGrids[g].classList.remove('open'); for (var h = 0; h < allHeaders.length; h++) allHeaders[h].classList.remove('open'); if (!isOpen) { grid.classList.add('open'); header.classList.add('open'); } } playSfx('click'); } };
+}
+
+function renderNavalSection() {
+  var npc = navPhasesCompleted(S), progHtml = '';
+  for (var pi = 0; pi < NAV_PHASES.length; pi++) { var done = isNavPhaseComplete(pi); progHtml += '<div class="np-item ' + (done ? 'done' : (pi === npc ? 'current' : '')) + '"><div class="np-dot"></div><span>' + (pi + 1) + '</span></div>'; }
+  $('navalProgress').innerHTML = progHtml;
+  var phasesHtml = '';
+  for (var ppi = 0; ppi < NAV_PHASES.length; ppi++) { var ph = NAV_PHASES[ppi], phMods = NAV_MODULES.filter(function(m) { return m.navalPhase === ph.id; }), phDone = 0; for (var pmi = 0; pmi < phMods.length; pmi++) { var psm = S.modules[phMods[pmi].id]; if (psm && psm.stars) phDone++; } var completed = phDone >= phMods.length, locked = ppi > 0 && !isNavPhaseComplete(ppi - 1); phasesHtml += '<button class="nphase ' + (completed ? 'completed' : (locked ? 'locked' : '')) + '" data-phase="' + ph.id + '"><div class="np-icon">' + ph.icon + '</div><div class="np-title">' + (ppi + 1) + '. ' + ph.name + '</div><div class="np-desc">' + ph.desc + '</div><div class="np-status">' + (completed ? '✅ Concluída' : (locked ? '🔒 Bloqueada' : phDone + '/' + phMods.length)) + '</div></button>'; }
+  $('navalPhases').innerHTML = phasesHtml;
+  $('navalPhases').onclick = function(e) { var card = e.target.closest('.nphase'); if (card && !card.classList.contains('locked')) { navCat = 'naval_' + card.getAttribute('data-phase'); navSearch = ''; navDisplay = 48; renderHub(); setTimeout(function() { var g = $('modGridNav'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); playSfx('click'); } };
+}
+
+function renderMedFilters() { var html = '<button class="cat-btn ' + (enfCat === 'all' ? 'on' : '') + '" data-cat="all">Todos</button>'; for (var i = 0; i < MED_CATS.length; i++) html += '<button class="cat-btn ' + (enfCat === MED_CATS[i].id ? 'on' : '') + '" data-cat="' + MED_CATS[i].id + '">' + MED_CATS[i].icon + ' ' + MED_CATS[i].name + '</button>'; $('catFiltersEnf').innerHTML = html; var btns = $('catFiltersEnf').querySelectorAll('.cat-btn'); for (var j = 0; j < btns.length; j++) btns[j].onclick = function() { enfCat = this.getAttribute('data-cat'); enfDisplay = 48; renderHub(); playSfx('click'); }; }
+function renderNavFilters() { var html = '<button class="cat-btn ' + (navCat === 'all' ? 'on' : '') + '" data-cat="all">Todas as Fases</button>'; for (var i = 0; i < NAV_PHASES.length; i++) html += '<button class="cat-btn ' + (navCat === 'naval_' + NAV_PHASES[i].id ? 'on' : '') + '" data-cat="naval_' + NAV_PHASES[i].id + '">' + NAV_PHASES[i].icon + ' ' + NAV_PHASES[i].name + '</button>'; $('catFiltersNav').innerHTML = html; var btns = $('catFiltersNav').querySelectorAll('.cat-btn'); for (var j = 0; j < btns.length; j++) btns[j].onclick = function() { navCat = this.getAttribute('data-cat'); navDisplay = 48; renderHub(); playSfx('click'); }; }
+
+function getFilteredMed() { var r = []; for (var i = 0; i < MED_MODULES.length; i++) { var m = MED_MODULES[i]; if (enfCat !== 'all' && m.catId !== enfCat) continue; if (enfSearch && m.name.toLowerCase().indexOf(enfSearch) < 0 && m.cat.toLowerCase().indexOf(enfSearch) < 0) continue; r.push({ mod: m, origIdx: i }); } return r; }
+function getFilteredNav() { var r = []; for (var i = 0; i < NAV_MODULES.length; i++) { var m = NAV_MODULES[i]; if (navCat !== 'all' && m.catId !== navCat) continue; if (navSearch && m.name.toLowerCase().indexOf(navSearch) < 0 && m.cat.toLowerCase().indexOf(navSearch) < 0) continue; r.push({ mod: m, origIdx: i }); } return r; }
+
+function renderModuleGrid(modules, filtered, visible, gridId, countId, loadMoreId) {
+  $(countId).textContent = '(' + filtered.length + '/' + modules.length + ')'; var html = '';
+  for (var i = 0; i < visible.length; i++) { var item = visible[i], m = item.mod, oi = item.origIdx, sm = S.modules[m.id], st = sm ? sm.stars || 0 : 0, un = isUnlocked(modules, oi), lr = lessonsReadOf(m); html += '<button class="mtile' + (un ? '' : ' locked') + '" style="--mc:' + m.color + '" data-mid="' + m.id + '"><div class="mt-top"><span class="mt-icon">' + m.icon + '</span><span class="mt-stars">' + (st > 0 ? '★'.repeat(st) + '<span class="nostar">' + '☆'.repeat(3 - st) + '</span>' : '<span class="nostar">☆☆☆</span>') + '</span></div><div class="mt-name">' + m.name + '</div><div class="mt-cat">' + m.cat + '</div>' + (un ? '<div class="mt-bar"><i style="width:' + Math.round(lr / m.lessons.length * 100) + '%"></i></div>' : '<div class="mt-lock">🔒 Módulo ' + (oi + 1) + '</div>') + '</button>'; }
+  $(gridId).innerHTML = html;
+  $(gridId).onclick = function(e) { var tile = e.target.closest('.mtile'); if (tile && !tile.classList.contains('locked')) { var mid = tile.getAttribute('data-mid'); if (mid) openModule(mid); } };
+  $(loadMoreId).style.display = visible.length < filtered.length ? 'block' : 'none';
+}
+
+function renderHub() {
+  renderNavalSection(); renderMedFilters(); renderNavFilters();
+  $('hubRank').textContent = rankOf(getLevel(S.xp)) + ' • Nv ' + getLevel(S.xp);
+  var tl = MED_MODULES.length * 3 + NAV_MODULES.length * 3, pct = tl > 0 ? Math.round((S.lessonsRead.length / tl) * 60 + (totalStars(S) / ((MED_MODULES.length + NAV_MODULES.length) * 3)) * 40) : 0;
+  $('hubRing').style.setProperty('--p', Math.min(100, pct)); $('hubRingTxt').textContent = Math.min(100, pct) + '%';
+  if (activeTrack === 'enf') { var f = getFilteredMed(); renderModuleGrid(MED_MODULES, f, f.slice(0, enfDisplay), 'modGridEnf', 'modCountEnf', 'loadMoreWrapEnf'); }
+  else if (activeTrack === 'nav') { var f = getFilteredNav(); renderModuleGrid(NAV_MODULES, f, f.slice(0, navDisplay), 'modGridNav', 'modCountNav', 'loadMoreWrapNav'); }
+  else renderDreamSection();
+  $('statRow').innerHTML = '<div class="mini"><b>' + S.xp + '</b><span>XP</span></div><div class="mini"><b>' + totalStars(S) + '</b><span>⭐</span></div><div class="mini"><b>' + S.correct + '/' + S.answered + '</b><span>acertos</span></div><div class="mini"><b>' + S.bestStreak + '</b><span>🔥</span></div><div class="mini"><b>' + S.quizDone + '</b><span>quizzes</span></div>';
+}
+
+var curMod = null, curLesson = 0;
+function openModule(id) { curMod = null; for (var a = 0; a < MED_MODULES.length; a++) if (MED_MODULES[a].id === id) { curMod = MED_MODULES[a]; break; } if (!curMod) for (var b = 0; b < NAV_MODULES.length; b++) if (NAV_MODULES[b].id === id) { curMod = NAV_MODULES[b]; break; } if (!curMod) return; curLesson = 0; $('modHead').innerHTML = '<span class="ico">' + curMod.icon + '</span><div><h1>' + curMod.name + '</h1><p>' + curMod.desc + '</p></div>'; switchTab('learn'); renderLesson(); renderQuizPanel(); go('module'); }
+function switchTab(tab) { $('tabLearn').classList.toggle('on', tab === 'learn'); $('tabQuiz').classList.toggle('on', tab === 'quiz'); $('panelLearn').style.display = tab === 'learn' ? 'block' : 'none'; $('panelQuiz').style.display = tab === 'quiz' ? 'block' : 'none'; playSfx('click'); }
+function renderLesson() { var L = curMod.lessons[curLesson]; $('lIdx').textContent = 'AULA ' + (curLesson + 1) + '/' + curMod.lessons.length; $('lTitle').textContent = L.t; $('lBody').innerHTML = L.html; var dots = ''; for (var i = 0; i < curMod.lessons.length; i++) dots += '<i class="' + (i <= curLesson ? 'on' : '') + '"></i>'; $('lDots').innerHTML = dots; $('lPrev').disabled = curLesson === 0; $('lNext').textContent = curLesson === curMod.lessons.length - 1 ? 'Concluir ✓' : 'Próxima ▸'; markRead(curMod.id, curLesson); }
+function lessonNav(dir) { var nx = curLesson + dir; if (nx < 0) return; if (nx >= curMod.lessons.length) { switchTab('quiz'); toast('📖 Aulas concluídas! Encare o <b>Desafio</b>.'); return; } curLesson = nx; renderLesson(); playSfx('click'); }
+function markRead(mid, i) { var key = mid + ':' + i; if (S.lessonsRead.indexOf(key) < 0) { S.lessonsRead.push(key); addXp(5); checkAch(); } }
+function renderQuizPanel() { var sm = S.modules[curMod.id], st = sm ? sm.stars || 0 : 0; $('qsStars').innerHTML = st > 0 ? '★'.repeat(st) + '<span style="color:#2c3a55">' + '☆'.repeat(3 - st) + '</span>' : '<span style="color:#2c3a55">☆☆☆</span>'; $('qsInfo').innerHTML = '<b style="color:var(--cyan)">' + curMod.quiz.length + ' questões</b> • 30s • Meta: 85%=⭐⭐⭐'; }
+
+var QZ = null, TMR = null;
+function shuffle(arr) { var a = arr.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = a[i]; a[i] = a[j]; a[j] = tmp; } return a; }
+function startQuiz() { var qs = shuffle(curMod.quiz).map(function(q) { var opts = shuffle(q.o.map(function(t, i) { return { t: t, ok: i === q.c }; })); return { q: q.q, opts: opts, e: q.e }; }); QZ = { qs: qs, idx: 0, ok: 0, hp: 100, streak: 0, answered: false, bonus: 0 }; go('quiz'); renderQ(); }
+function renderQ() { var q = QZ.qs[QZ.idx]; QZ.answered = false; $('qMod').textContent = curMod.icon + ' ' + curMod.name; $('qProg').textContent = (QZ.idx + 1) + '/' + QZ.qs.length; $('qStreak').textContent = QZ.streak > 1 ? '🔥x' + QZ.streak : ''; updateHp(); $('qText').textContent = q.q; $('qExp').className = 'explain'; $('qExp').innerHTML = ''; $('qNext').style.display = 'none'; var html = '', letters = ['A', 'B', 'C', 'D']; for (var i = 0; i < q.opts.length; i++) html += '<button class="opt" data-idx="' + i + '"><span class="lt">' + letters[i] + '</span><span>' + q.opts[i].t + '</span></button>'; $('qOpts').innerHTML = html; $('qOpts').onclick = function(e) { var btn = e.target.closest('.opt'); if (btn && !QZ.answered) pickAnswer(parseInt(btn.getAttribute('data-idx'), 10), e); }; startTimer(); }
+function startTimer() { clearInterval(TMR); var t = 30; var f = $('tFill'); f.classList.remove('danger'); f.style.width = '100%'; TMR = setInterval(function() { t -= 0.1; f.style.width = Math.max(0, (t / 30) * 100) + '%'; if (t <= 8) f.classList.add('danger'); if (t <= 0) { clearInterval(TMR); timeUp(); } }, 100); }
+function timeUp() { if (QZ.answered) return; QZ.answered = true; resolvePick(-1); }
+function pickAnswer(i, ev) { if (QZ.answered) return; QZ.answered = true; clearInterval(TMR); resolvePick(i, ev); }
+function resolvePick(i, ev) { var q = QZ.qs[QZ.idx], okIdx = -1; for (var k = 0; k < q.opts.length; k++) if (q.opts[k].ok) { okIdx = k; break; } var btns = $('qOpts').querySelectorAll('.opt'); for (var b = 0; b < btns.length; b++) { btns[b].disabled = true; if (b === okIdx) btns[b].classList.add('correct'); } var isOk = (i === okIdx); S.answered++; if (isOk) { S.correct++; QZ.ok++; QZ.streak++; if (QZ.streak > S.bestStreak) S.bestStreak = QZ.streak; QZ.hp = Math.min(100, QZ.hp + 6); var gain = 10 + Math.min(QZ.streak - 1, 5) * 2; QZ.bonus += gain; addXp(gain); playSfx('ok'); if (ev && ev.clientX) floatXp(ev.clientX, ev.clientY, '+' + gain); } else { if (i >= 0 && btns[i]) btns[i].classList.add('wrong'); QZ.streak = 0; QZ.hp = Math.max(0, QZ.hp - 18); playSfx('bad'); var pb = $('patientBox'); pb.classList.remove('shake'); void pb.offsetWidth; pb.classList.add('shake'); } saveState(); updateHp(); checkAch(); var letters = ['A', 'B', 'C', 'D'], letter = letters[okIdx] || '?'; $('qExp').className = 'explain show ' + (isOk ? 'good' : 'bad'); $('qExp').innerHTML = '<div class="eh">' + (isOk ? '✅ Correto!' : '❌ ' + (i === -1 ? 'Tempo esgotado!' : 'Errado.') + ' Certa: ' + letter) + '</div><p>' + q.e + '</p>'; $('qStreak').textContent = QZ.streak > 1 ? '🔥x' + QZ.streak : ''; var nb = $('qNext'); nb.style.display = 'inline-flex'; nb.textContent = QZ.hp <= 0 ? 'Resultado 💔' : (QZ.idx === QZ.qs.length - 1 ? 'Resultado ▸' : 'Próxima ▸'); }
+function updateHp() { var hp = Math.max(0, QZ.hp); $('hpFill').style.width = hp + '%'; if (hp < 40) $('hpFill').classList.add('low'); else $('hpFill').classList.remove('low'); $('hpTxt').textContent = hp + '%'; $('hrTxt').textContent = Math.round(72 + (100 - hp) * 0.8); }
+function nextQ() { playSfx('click'); if (QZ.hp <= 0) { showResult(true); return; } if (QZ.idx === QZ.qs.length - 1) { showResult(false); return; } QZ.idx++; renderQ(); }
+function showResult(fail) { clearInterval(TMR); var total = QZ.qs.length, pct = total > 0 ? QZ.ok / total : 0, st = 0; if (!fail) { if (pct >= 0.85) st = 3; else if (pct >= 0.6) st = 2; else if (pct >= 0.4) st = 1; } var bonus = st === 3 ? 30 : (st === 2 ? 15 : (st === 1 ? 8 : 0)); if (!fail) { S.quizDone++; if (pct === 1) { S.perfect++; bonus += 10; } var prev = S.modules[curMod.id] || { stars: 0 }; if (st > prev.stars) prev.stars = st; S.modules[curMod.id] = prev; addXp(bonus); if (st >= 2) spawnConfetti(st === 3 ? 90 : 50); if (st === 3) playSfx('win'); else if (st > 0) playSfx('star'); } saveState(); checkAch(); $('resIcon').textContent = fail ? '💔' : (st === 3 ? '🏆' : (st === 2 ? '🎉' : (st === 1 ? '💪' : '📚'))); var starsHtml = ''; for (var si = 1; si <= 3; si++) starsHtml += '<span class="' + (si <= st ? '' : 'off') + '">★</span>'; $('resStars').innerHTML = starsHtml; $('resTitle').textContent = fail ? 'Paciente transferido!' : (st === 3 ? 'IMPECÁVEL!' : (st === 2 ? 'Ótimo!' : (st === 1 ? 'Passou!' : 'Tente novamente'))); $('resMsg').textContent = fail ? 'Revise as aulas e tente de novo.' : (st === 3 ? 'Excelência absoluta!' : (st === 2 ? 'Busque as 3 estrelas!' : (st === 1 ? 'Continue treinando!' : 'Estude mais e volte forte.'))); $('resStats').innerHTML = '<div class="mini"><b>' + QZ.ok + '/' + total + '</b><span>acertos</span></div><div class="mini"><b>' + Math.round(pct * 100) + '%</b><span>%</span></div><div class="mini"><b>+' + (QZ.bonus + bonus) + '</b><span>XP</span></div><div class="mini"><b>' + ((S.modules[curMod.id] || {}).stars || 0) + '★</b><span>melhor</span></div>'; $('resActions').innerHTML = '<button class="btn btn-ghost" data-res="retry">↻ Tentar</button><button class="btn btn-ghost" data-res="hub">🏠 Central</button>'; $('resActions').onclick = function(e) { var btn = e.target.closest('[data-res]'); if (!btn) return; var action = btn.getAttribute('data-res'); if (action === 'retry') openModule(curMod.id); else if (action === 'hub') go('hub'); }; go('result'); }
+
+function renderProgress() { var tl = MED_MODULES.length * 3 + NAV_MODULES.length * 3; $('pStats').innerHTML = '<div class="mini"><b>' + S.xp + '</b><span>XP</span></div><div class="mini"><b>Nv' + getLevel(S.xp) + '</b><span>' + rankOf(getLevel(S.xp)) + '</span></div><div class="mini"><b>' + totalStars(S) + '</b><span>⭐</span></div><div class="mini"><b>' + S.lessonsRead.length + '/' + tl + '</b><span>aulas</span></div><div class="mini"><b>' + (S.answered > 0 ? Math.round(S.correct / S.answered * 100) : 0) + '%</b><span>precisão</span></div><div class="mini"><b>' + S.quizDone + '</b><span>quizzes</span></div>'; $('achCt').textContent = '(' + S.ach.length + '/' + ACHS.length + ')'; var ahtml = ''; for (var i = 0; i < ACHS.length; i++) { var a = ACHS[i], got = S.ach.indexOf(a.id) >= 0; ahtml += '<div class="ach' + (got ? ' got' : '') + '"><span class="ai">' + a.icon + '</span><div><b>' + a.name + '</b><small>' + a.desc + '</small></div></div>'; } $('achGrid').innerHTML = ahtml; }
+function checkAch() { for (var i = 0; i < ACHS.length; i++) { var a = ACHS[i]; if (S.ach.indexOf(a.id) < 0) { try { if (a.test(S)) { S.ach.push(a.id); saveState(); toast('🏆 <b>' + a.name + '</b>', true); playSfx('star'); } } catch(e) {} } } }
+function resetAll() { if (confirm('Apagar TODO o progresso desta conta?')) { var user = getCurrentUser(); if (user) storageRemove('bussola_data_' + user); S = JSON.parse(JSON.stringify(DEF)); saveState(); updateHUD(); renderHub(); toast('🗑️ Progresso apagado.'); } }
+
+/* ===== BINDINGS ===== */
+$('btnStart').onclick = function() { playSfx('click'); go('hub'); if (S.xp === 0 && S.lessonsRead.length === 0) toast('🧭 Bem-vindo(a) ao <b>BÚSSOLA NAVAL</b>!'); };
+$('btnHow').onclick = openHow;
+$('hubBack').onclick = function() { go('home'); };
+$('modBack').onclick = function() { go('hub'); };
+$('progBtn').onclick = function() { go('progress'); };
+$('progBack').onclick = function() { go('hub'); };
+$('sndBtn').onclick = function() { S.sound = !S.sound; saveState(); updateHUD(); if (S.sound) playSfx('click'); };
+$('tabEnf').onclick = function() { switchTrack('enf'); };
+$('tabNav').onclick = function() { switchTrack('nav'); };
+$('tabDream').onclick = function() { switchTrack('dream'); };
+$('searchBarEnf').oninput = function() { enfSearch = this.value.toLowerCase(); enfDisplay = 48; renderHub(); };
+$('searchBarNav').oninput = function() { navSearch = this.value.toLowerCase(); navDisplay = 48; renderHub(); };
+$('loadMoreBtnEnf').onclick = function() { enfDisplay += 48; renderHub(); playSfx('click'); };
+$('loadMoreBtnNav').onclick = function() { navDisplay += 48; renderHub(); playSfx('click'); };
+$('tabLearn').onclick = function() { switchTab('learn'); };
+$('tabQuiz').onclick = function() { switchTab('quiz'); };
+$('lPrev').onclick = function() { lessonNav(-1); };
+$('lNext').onclick = function() { lessonNav(1); };
+$('startQuizBtn').onclick = startQuiz;
+$('qNext').onclick = nextQ;
+$('resetBtn').onclick = resetAll;
+$('logoBtn').onclick = function() { go('hub'); };
+$('modal-wrap').onclick = function(e) { if (e.target === $('modal-wrap')) closeModal(); };
+document.onclick = function(e) { if (e.target && e.target.getAttribute('data-action') === 'close-modal') closeModal(); };
+document.onkeydown = function(e) { var qs = $('screen-quiz'); if (!qs || !qs.classList.contains('active') || !QZ) return; if (!QZ.answered) { if (e.key === '1') pickAnswer(0); else if (e.key === '2') pickAnswer(1); else if (e.key === '3') pickAnswer(2); else if (e.key === '4') pickAnswer(3); } else if (e.key === 'Enter') nextQ(); };
+$('salvarCartaBtn').onclick = function() { var text = $('cartaInput').value.trim(); if (!text) { toast('💙 Escreva algo antes de guardar!'); return; } var now = new Date(); S.diario.push({ text: text, date: now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }); saveState(); $('cartaInput').value = ''; renderDiario(); playSfx('star'); toast('💌 <b>Carta guardada!</b> 💙', true); addXp(3); };
+
+/* ===== INIT ===== */
+var currentUser = getCurrentUser();
+var accounts = getAccounts();
+if (currentUser && accounts[currentUser]) {
+  enterApp(currentUser);
+} else {
+  showOneScreen('login');
+}
+</script>
+</body>
+</html>
